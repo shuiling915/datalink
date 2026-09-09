@@ -3122,6 +3122,10 @@ html, body {
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1.5l1.6 3.4 3.7.4-2.8 2.5.8 3.6L8 9.9 4.7 11.9l.8-3.6L2.7 5.8l3.7-.4z"/></svg>
       AI智能
     </a>
+    <a class="header-tab" href="/datamodeling" data-route="datamodeling" target="_blank">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>
+      数据建模
+    </a>
   </nav>
   <div class="header-right">
     <span class="env-badge">本地环境</span>
@@ -5369,7 +5373,7 @@ html, body {
         applyLogin();
         document.getElementById('loginOverlay').style.display='none';
       }else{ msg.style.color='#ff4d4f'; msg.textContent=d.msg||'登录失败'; }
-    }catch(e){ msg.style.color='#ff4d4f'; msg.textContent='请求失败'; }
+    }catch(e){ console.error('Login error:', e); msg.style.color='#ff4d4f'; msg.textContent='请求失败: ' + e.message; }
   };
   window.doLogout = function(){
     if(!confirm('确认退出登录？')) return;

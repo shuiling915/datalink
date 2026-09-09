@@ -43,3 +43,10 @@ scripts/git-guard-*
 
 # 本机部署配置（含密钥），只保留模板 datanote.conf.example
 datanote.conf
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Vue 构建产物
+src/main/resources/static/vue/

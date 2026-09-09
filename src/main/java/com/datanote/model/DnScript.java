@@ -41,4 +41,15 @@ public class DnScript {
     private String subSubject;
     private String alertChannel;
     private String alertContact;
+
+    // 数据开发模块字段
+    private String taskLayer;
+    private String taskStatus;
+    private String owner;
+    private Integer priority;
+
+    // 双环境字段
+    private String environment;
+    private Long devScriptId;
+    private Long prodScriptId;
 }

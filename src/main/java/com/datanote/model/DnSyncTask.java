@@ -39,4 +39,7 @@ public class DnSyncTask {
     private String warningType;
     private String alertChannel;
     private String alertContact;
+
+    // 数据开发模块字段
+    private String taskLayer;
 }

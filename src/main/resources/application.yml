@@ -11,9 +11,9 @@ spring:
   main:
     allow-circular-references: true  # TaskSchedulerService <-> TaskExecutionService 循环依赖
   datasource:
-    url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3306}/datanote?useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3307}/datanote?useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
     username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:}
+    password: ${DB_PASSWORD:root123}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
 # -------------------- MyBatis-Plus --------------------
@@ -48,7 +48,7 @@ dolphin:
 # -------------------- DataNote 配置 --------------------
 datanote:
   crypto:
-    key: ${DATANOTE_CRYPTO_KEY:}
+    key: datanote01234567
   auth:
     username: ${DATANOTE_USERNAME:admin}
     password: ${DATANOTE_PASSWORD:}
