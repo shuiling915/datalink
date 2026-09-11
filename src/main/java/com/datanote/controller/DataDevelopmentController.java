@@ -1,13 +1,13 @@
 package com.datanote.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.datanote.common.Constants;
 import com.datanote.mapper.*;
 import com.datanote.model.*;
 import com.datanote.model.R;
 import com.datanote.service.ScriptService;
 import com.datanote.service.TaskDependencyService;
-import com.datanote.util.CryptoUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -18,9 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -545,12 +543,38 @@ public class DataDevelopmentController {
         return result;
     }
 
-    @Operation(summary = "获取发布历史")
+    @Operation(summary = "获取脚本发布历史")
     @GetMapping("/publish-history/{devScriptId}")
     public R<List<DnScriptPublish>> getPublishHistory(@PathVariable Long devScriptId) {
         QueryWrapper<DnScriptPublish> qw = new QueryWrapper<>();
         qw.eq("dev_script_id", devScriptId).orderByDesc("created_at");
         return R.ok(publishMapper.selectList(qw));
+    }
+
+    @Operation(summary = "获取全部发布历史(分页)")
+    @GetMapping("/publish-history/all")
+    public R<Map<String, Object>> getAllPublishHistory(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "20") Integer pageSize,
+            @RequestParam(required = false) String environment,
+            @RequestParam(required = false) String publishStatus,
+            @RequestParam(required = false) String publishType) {
+        Page<DnScriptPublish> page = new Page<>(pageNum, pageSize);
+        QueryWrapper<DnScriptPublish> qw = new QueryWrapper<>();
+        if (publishStatus != null && !publishStatus.isEmpty()) {
+            qw.eq("publish_status", publishStatus);
+        }
+        if (publishType != null && !publishType.isEmpty()) {
+            qw.eq("publish_type", publishType);
+        }
+        qw.orderByDesc("created_at");
+        Page<DnScriptPublish> result = publishMapper.selectPage(page, qw);
+        Map<String, Object> map = new HashMap<>();
+        map.put("records", result.getRecords());
+        map.put("total", result.getTotal());
+        map.put("pageNum", pageNum);
+        map.put("pageSize", pageSize);
+        return R.ok(map);
     }
 
     @Operation(summary = "回滚生产脚本到指定发布版本")

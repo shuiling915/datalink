@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS dn_script_publish (
     prod_script_id  BIGINT       DEFAULT NULL COMMENT '生产环境脚本ID',
     publish_version VARCHAR(32)  NOT NULL COMMENT '发布版本号 v1.0.0',
     publish_type    VARCHAR(16)  DEFAULT 'normal' COMMENT 'normal=正式发布 / rollback=回滚',
-    publish_status  VARCHAR(16)  DEFAULT 'pending' COMMENT 'pending/grayscale_testing/published/failed/rolled_back',
+    publish_status  VARCHAR(32)  DEFAULT 'pending' COMMENT 'pending/grayscale_testing/published/failed/rolled_back',
     
     -- 内容快照
     dev_content     LONGTEXT     DEFAULT NULL COMMENT '发布时dev脚本内容快照',

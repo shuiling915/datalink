@@ -50,3 +50,13 @@ frontend/dist/
 
 # Vue 构建产物
 src/main/resources/static/vue/
+
+# Multimodal Data Lake
+multimodal-data-lake/data/
+multimodal-data-lake/logs/
+multimodal-data-lake/temp_uploads/
+multimodal-data-lake/.env
+multimodal-data-lake/node_modules/
+multimodal-data-lake/frontend/node_modules/
+multimodal-data-lake/frontend/dist/
+multimodal-data-lake/**/__pycache__/

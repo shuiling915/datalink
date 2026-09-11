@@ -1,16 +1,20 @@
 <template>
   <el-card>
-    <div style="margin-bottom: 20px; display: flex; justify-content: space-between;">
-      <div style="display: flex; gap: 10px;">
-        <el-select v-model="domainId" placeholder="选择数据域" clearable style="width: 200px;" @change="loadData">
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <el-select v-model="domainId" placeholder="选择数据域" clearable class="domain-select" @change="loadData">
           <el-option v-for="d in domains" :key="d.id" :label="d.domainName" :value="d.id" />
         </el-select>
-        <el-input v-model="keyword" placeholder="搜索汇总表" style="width: 300px;" clearable @clear="loadData" @keyup.enter="loadData">
+        <el-input
+          v-model="keyword" placeholder="搜索汇总表" class="search-input"
+          clearable @clear="loadData" @keyup.enter="loadData"
+        >
           <template #append><el-button @click="loadData"><el-icon><Search /></el-icon></el-button></template>
         </el-input>
       </div>
-      <el-button type="primary" @click="showDialog = true"><el-icon><Plus /></el-icon>新建汇总表</el-button>
+      <el-button type="primary" @click="resetDialog"><el-icon><Plus /></el-icon>新建汇总表</el-button>
     </div>
+
     <el-table :data="tableData" v-loading="loading" stripe>
       <el-table-column prop="summaryCode" label="汇总表编码" width="200" />
       <el-table-column prop="summaryName" label="汇总表名称" width="200" />
@@ -36,7 +40,15 @@
         </template>
       </el-table-column>
     </el-table>
-    <el-pagination style="margin-top: 20px; justify-content: flex-end;" v-model:current-page="pageNum" v-model:page-size="pageSize" :total="total" @current-change="loadData" layout="total, prev, pager, next" />
+
+    <el-pagination
+      class="pagination"
+      v-model:current-page="pageNum"
+      v-model:page-size="pageSize"
+      :total="total"
+      @current-change="loadData"
+      layout="total, prev, pager, next"
+    />
   </el-card>
 
   <el-dialog v-model="showDialog" :title="isEdit ? '编辑汇总表' : '新建汇总表'" width="600px">
@@ -67,30 +79,91 @@ import { ref, onMounted } from 'vue'
 import { summaryTableApi, dataDomainApi } from '@/api/datamodeling'
 import { ElMessage } from 'element-plus'
 import { Search, Plus } from '@element-plus/icons-vue'
-import { useRouter } from 'vue-router'
 
-const router = useRouter()
-const loading = ref(false), tableData = ref([]), domains = ref([]), domainId = ref(null), keyword = ref('')
-const pageNum = ref(1), pageSize = ref(20), total = ref(0)
-const showDialog = ref(false), isEdit = ref(false), editId = ref(null)
-const form = ref({ summaryCode: '', summaryName: '', domainId: null, description: '', layer: 'DWS' })
+const loading = ref(false)
+const tableData = ref([])
+const domains = ref([])
+const domainId = ref(null)
+const keyword = ref('')
+const pageNum = ref(1)
+const pageSize = ref(20)
+const total = ref(0)
+const showDialog = ref(false)
+const isEdit = ref(false)
+const editId = ref(null)
+const defaultForm = { summaryCode: '', summaryName: '', domainId: null, description: '', layer: 'DWS' }
+const form = ref({ ...defaultForm })
 
 const loadData = async () => {
   loading.value = true
-  try { const res = await summaryTableApi.list({ pageNum: pageNum.value, pageSize: pageSize.value, domainId: domainId.value, keyword: keyword.value }); tableData.value = res.data.records; total.value = res.data.total }
-  finally { loading.value = false }
+  try {
+    const res = await summaryTableApi.list({ pageNum: pageNum.value, pageSize: pageSize.value, domainId: domainId.value, keyword: keyword.value })
+    tableData.value = res.data.records
+    total.value = res.data.total
+  } finally {
+    loading.value = false
+  }
 }
-const loadDomains = async () => { const res = await dataDomainApi.listAll(); domains.value = res.data }
-const handleEdit = (row) => { isEdit.value = true; editId.value = row.id; form.value = { ...row }; showDialog.value = true }
-const handleDelete = async (id) => { await summaryTableApi.delete(id); ElMessage.success('删除成功'); loadData() }
+
+const loadDomains = async () => {
+  const res = await dataDomainApi.listAll()
+  domains.value = res.data
+}
+
+const resetDialog = () => {
+  showDialog.value = true
+  isEdit.value = false
+  editId.value = null
+  form.value = { ...defaultForm }
+}
+
+const handleEdit = (row) => {
+  isEdit.value = true
+  editId.value = row.id
+  form.value = { ...row }
+  showDialog.value = true
+}
+
+const handleDelete = async (id) => {
+  await summaryTableApi.delete(id)
+  ElMessage.success('删除成功')
+  loadData()
+}
+
 const handlePublish = async (row) => {
-  try { await summaryTableApi.publish(row.id, 'admin'); ElMessage.success('发布成功'); loadData() }
-  catch (e) { ElMessage.error('发布失败: ' + (e.response?.data?.msg || e.message)) }
+  try {
+    await summaryTableApi.publish(row.id, 'admin')
+    ElMessage.success('发布成功')
+    loadData()
+  } catch (e) {
+    ElMessage.error('发布失败: ' + (e.response?.data?.msg || e.message))
+  }
 }
+
 const handleSubmit = async () => {
-  if (isEdit.value) { await summaryTableApi.update(editId.value, form.value); ElMessage.success('更新成功') }
-  else { await summaryTableApi.create(form.value); ElMessage.success('创建成功') }
-  showDialog.value = false; form.value = { summaryCode: '', summaryName: '', domainId: null, description: '', layer: 'DWS' }; isEdit.value = false; loadData()
+  if (isEdit.value) {
+    await summaryTableApi.update(editId.value, form.value)
+    ElMessage.success('更新成功')
+  } else {
+    await summaryTableApi.create(form.value)
+    ElMessage.success('创建成功')
+  }
+  showDialog.value = false
+  form.value = { ...defaultForm }
+  isEdit.value = false
+  loadData()
 }
-onMounted(() => { loadDomains(); loadData() })
+
+onMounted(() => {
+  loadDomains()
+  loadData()
+})
 </script>
+
+<style scoped>
+.toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.toolbar-left { display: flex; gap: 10px; }
+.domain-select { width: 200px; }
+.search-input { width: 300px; }
+.pagination { margin-top: 20px; justify-content: flex-end; }
+</style>

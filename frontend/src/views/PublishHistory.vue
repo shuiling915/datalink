@@ -1,11 +1,16 @@
 <template>
   <el-card>
-    <div style="margin-bottom: 20px; display: flex; gap: 10px;">
-      <el-select v-model="modelType" placeholder="模型类型" clearable style="width: 150px;" @change="loadData">
-        <el-option label="维度表" value="dimension" /><el-option label="事实表" value="fact" /><el-option label="汇总表" value="summary" />
-      </el-select>
-      <el-button @click="loadData"><el-icon><Refresh /></el-icon>刷新</el-button>
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <el-select v-model="modelType" placeholder="模型类型" clearable class="type-select" @change="loadData">
+          <el-option label="维度表" value="dimension" />
+          <el-option label="事实表" value="fact" />
+          <el-option label="汇总表" value="summary" />
+        </el-select>
+        <el-button @click="loadData"><el-icon><Refresh /></el-icon>刷新</el-button>
+      </div>
     </div>
+
     <el-table :data="tableData" v-loading="loading" stripe>
       <el-table-column prop="modelType" label="模型类型" width="100">
         <template #default="{ row }">
@@ -31,11 +36,19 @@
         </template>
       </el-table-column>
     </el-table>
-    <el-pagination style="margin-top: 20px; justify-content: flex-end;" v-model:current-page="pageNum" v-model:page-size="pageSize" :total="total" @current-change="loadData" layout="total, prev, pager, next" />
+
+    <el-pagination
+      class="pagination"
+      v-model:current-page="pageNum"
+      v-model:page-size="pageSize"
+      :total="total"
+      @current-change="loadData"
+      layout="total, prev, pager, next"
+    />
   </el-card>
 
   <el-dialog v-model="showDDLDialog" title="DDL内容" width="800px">
-    <el-input v-model="currentDDL" type="textarea" :rows="20" readonly style="font-family: monospace;" />
+    <el-input v-model="currentDDL" type="textarea" :rows="20" readonly class="ddl-textarea" />
   </el-dialog>
 </template>
 
@@ -44,14 +57,24 @@ import { ref, onMounted } from 'vue'
 import { publishHistoryApi } from '@/api/datamodeling'
 import { Refresh } from '@element-plus/icons-vue'
 
-const loading = ref(false), tableData = ref([]), modelType = ref(null)
-const pageNum = ref(1), pageSize = ref(20), total = ref(0)
-const showDDLDialog = ref(false), currentDDL = ref('')
+const loading = ref(false)
+const tableData = ref([])
+const modelType = ref(null)
+const pageNum = ref(1)
+const pageSize = ref(20)
+const total = ref(0)
+const showDDLDialog = ref(false)
+const currentDDL = ref('')
 
 const loadData = async () => {
   loading.value = true
-  try { const res = await publishHistoryApi.list({ pageNum: pageNum.value, pageSize: pageSize.value, modelType: modelType.value }); tableData.value = res.data.records; total.value = res.data.total }
-  finally { loading.value = false }
+  try {
+    const res = await publishHistoryApi.list({ pageNum: pageNum.value, pageSize: pageSize.value, modelType: modelType.value })
+    tableData.value = res.data.records
+    total.value = res.data.total
+  } finally {
+    loading.value = false
+  }
 }
 
 const showDDL = (row) => {
@@ -61,3 +84,11 @@ const showDDL = (row) => {
 
 onMounted(loadData)
 </script>
+
+<style scoped>
+.toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.toolbar-left { display: flex; gap: 10px; }
+.type-select { width: 150px; }
+.pagination { margin-top: 20px; justify-content: flex-end; }
+.ddl-textarea { font-family: monospace; }
+</style>

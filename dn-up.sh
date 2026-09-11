@@ -50,6 +50,23 @@ for i in $(seq 1 20); do
 done
 [ "$HS2_OK" = false ] && { echo ""; warn "HiveServer2 暂未就绪，应用照常启动；跑 DataX 作业前请确认它已 ready"; }
 
-# ---------- 4) 启动应用（复用项目脚本：含建库/编译/就绪检测）----------
+# ---------- 4) 启动多模态数据湖 FastAPI ----------
+LAKE_DIR="$SCRIPT_DIR/multimodal-data-lake"
+if [ -d "$LAKE_DIR" ]; then
+  info "启动多模态数据湖 FastAPI (端口 27844)..."
+  cd "$LAKE_DIR"
+  if [ ! -d "frontend/dist" ]; then
+    warn "数据湖前端未构建，正在构建中..."
+    (cd frontend && npm install --silent && npx vite build 2>&1 | tail -5)
+    info "数据湖前端构建完成"
+  fi
+  nohup python3 -m uvicorn backend.main:app --host 0.0.0.0 --port 27844 > /tmp/multimodal-lake.log 2>&1 &
+  info "多模态数据湖已启动 (PID: $!)"
+  cd "$SCRIPT_DIR"
+else
+  warn "未找到 multimodal-data-lake 目录，跳过多模态数据湖启动"
+fi
+
+# ---------- 5) 启动应用（复用项目脚本：含建库/编译/就绪检测）----------
 info "启动 DataNote 应用..."
 "$SCRIPT_DIR/setup-datanote.sh"

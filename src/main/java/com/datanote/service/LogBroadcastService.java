@@ -70,4 +70,18 @@ public class LogBroadcastService {
         payload.put("time", LocalDateTime.now().format(FMT));
         messagingTemplate.convertAndSend("/topic/notification", payload);
     }
+
+    /**
+     * 通用广播方法 — 支持实时开发日志等
+     */
+    public void broadcast(String topic, String level, Long taskId, String taskName, String message) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("level", level);
+        payload.put("taskId", taskId);
+        payload.put("taskName", taskName);
+        payload.put("message", message);
+        payload.put("time", LocalDateTime.now().format(FMT));
+        String destination = "/topic/" + topic;
+        messagingTemplate.convertAndSend(destination, payload);
+    }
 }

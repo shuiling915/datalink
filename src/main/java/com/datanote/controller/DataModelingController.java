@@ -206,6 +206,12 @@ public class DataModelingController {
         return R.ok();
     }
 
+    @DeleteMapping("/dimensions/{id}")
+    public R deleteDimension(@PathVariable Long id) {
+        dataModelingService.deleteDimension(id);
+        return R.ok();
+    }
+
     @PostMapping("/dimensions/{id}/fields")
     public R saveDimensionFields(@PathVariable Long id, @RequestBody List<DnDimensionField> fields) {
         dataModelingService.saveDimensionFields(id, fields);
@@ -257,6 +263,12 @@ public class DataModelingController {
         return R.ok();
     }
 
+    @DeleteMapping("/facttables/{id}")
+    public R deleteFactTable(@PathVariable Long id) {
+        dataModelingService.deleteFactTable(id);
+        return R.ok();
+    }
+
     @PostMapping("/facttables/{id}/fields")
     public R saveFactFields(@PathVariable Long id, @RequestBody List<DnFactField> fields) {
         dataModelingService.saveFactFields(id, fields);
@@ -305,6 +317,12 @@ public class DataModelingController {
     public R updateSummaryTable(@PathVariable Long id, @RequestBody DnSummaryTable summaryTable) {
         summaryTable.setId(id);
         dataModelingService.updateSummaryTable(summaryTable);
+        return R.ok();
+    }
+
+    @DeleteMapping("/summarytables/{id}")
+    public R deleteSummaryTable(@PathVariable Long id) {
+        dataModelingService.deleteSummaryTable(id);
         return R.ok();
     }
 

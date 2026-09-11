@@ -1,11 +1,17 @@
 <template>
   <el-card>
-    <div style="margin-bottom: 20px; display: flex; justify-content: space-between;">
-      <el-input v-model="keyword" placeholder="搜索词根" style="width: 300px;" clearable @clear="loadData" @keyup.enter="loadData">
-        <template #append><el-button @click="loadData"><el-icon><Search /></el-icon></el-button></template>
-      </el-input>
-      <el-button type="primary" @click="showDialog = true"><el-icon><Plus /></el-icon>新建词根</el-button>
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <el-input
+          v-model="keyword" placeholder="搜索词根" class="search-input"
+          clearable @clear="loadData" @keyup.enter="loadData"
+        >
+          <template #append><el-button @click="loadData"><el-icon><Search /></el-icon></el-button></template>
+        </el-input>
+      </div>
+      <el-button type="primary" @click="resetDialog"><el-icon><Plus /></el-icon>新建词根</el-button>
     </div>
+
     <el-table :data="tableData" v-loading="loading" stripe>
       <el-table-column prop="wordCode" label="词根编码" width="150" />
       <el-table-column prop="wordName" label="词根名称" width="150" />
@@ -22,7 +28,8 @@
         </template>
       </el-table-column>
     </el-table>
-    <el-pagination style="margin-top: 20px; justify-content: flex-end;" v-model:current-page="pageNum" v-model:page-size="pageSize" :total="total" @current-change="loadData" layout="total, prev, pager, next" />
+
+    <el-pagination class="pagination" v-model:current-page="pageNum" v-model:page-size="pageSize" :total="total" @current-change="loadData" layout="total, prev, pager, next" />
   </el-card>
 
   <el-dialog v-model="showDialog" :title="isEdit ? '编辑词根' : '新建词根'" width="600px">
@@ -45,26 +52,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { wordRootApi } from '@/api/datamodeling'
-import { ElMessage } from 'element-plus'
+import { useCrud } from '@/composables/useCrud'
 import { Search, Plus } from '@element-plus/icons-vue'
 
-const loading = ref(false), tableData = ref([]), keyword = ref(''), pageNum = ref(1), pageSize = ref(20), total = ref(0)
-const showDialog = ref(false), isEdit = ref(false), editId = ref(null)
-const form = ref({ wordCode: '', wordName: '', wordType: '', description: '', status: 1 })
+const defaultForm = { wordCode: '', wordName: '', wordType: '', description: '', status: 1 }
+const { loading, tableData, keyword, pageNum, pageSize, total, showDialog, isEdit, form, loadData, handleEdit, handleDelete, handleSubmit, resetDialog } = useCrud(wordRootApi, defaultForm)
 
-const loadData = async () => {
-  loading.value = true
-  try { const res = await wordRootApi.list({ pageNum: pageNum.value, pageSize: pageSize.value, keyword: keyword.value }); tableData.value = res.data.records; total.value = res.data.total }
-  finally { loading.value = false }
-}
-const handleEdit = (row) => { isEdit.value = true; editId.value = row.id; form.value = { ...row }; showDialog.value = true }
-const handleDelete = async (id) => { await wordRootApi.delete(id); ElMessage.success('删除成功'); loadData() }
-const handleSubmit = async () => {
-  if (isEdit.value) { await wordRootApi.update(editId.value, form.value); ElMessage.success('更新成功') }
-  else { await wordRootApi.create(form.value); ElMessage.success('创建成功') }
-  showDialog.value = false; form.value = { wordCode: '', wordName: '', wordType: '', description: '', status: 1 }; isEdit.value = false; loadData()
-}
 onMounted(loadData)
 </script>
+
+<style scoped>
+.toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.search-input { width: 300px; }
+.pagination { margin-top: 20px; justify-content: flex-end; }
+</style>

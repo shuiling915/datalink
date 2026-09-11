@@ -1,0 +1,27 @@
+-- 实时开发任务表
+CREATE TABLE IF NOT EXISTS `dn_realtime_task` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `folder_id` BIGINT DEFAULT 0 COMMENT '文件夹ID',
+  `task_name` VARCHAR(200) DEFAULT '' COMMENT '任务名称',
+  `task_type` VARCHAR(50) DEFAULT 'flink_sql' COMMENT '任务类型: flink_sql, kafka_sql',
+  `content` LONGTEXT COMMENT 'SQL内容',
+  `description` VARCHAR(500) DEFAULT '' COMMENT '描述',
+  `status` VARCHAR(20) DEFAULT 'draft' COMMENT '状态: draft, running, stopped, failed',
+  `parallelism` INT DEFAULT 1 COMMENT '并行度',
+  `checkpoint_interval_sec` INT DEFAULT 60 COMMENT 'Checkpoint间隔(秒)',
+  `checkpoint_path` VARCHAR(500) DEFAULT '' COMMENT 'Checkpoint路径',
+  `kafka_bootstrap_servers` VARCHAR(500) DEFAULT '' COMMENT 'Kafka地址',
+  `source_topic` VARCHAR(200) DEFAULT '' COMMENT '源Topic',
+  `sink_table` VARCHAR(200) DEFAULT '' COMMENT '目标表',
+  `properties` TEXT COMMENT '扩展属性(JSON)',
+  `job_id` VARCHAR(100) DEFAULT '' COMMENT 'Flink Job ID',
+  `application_id` VARCHAR(100) DEFAULT '' COMMENT 'YARN Application ID',
+  `last_error` TEXT COMMENT '最近错误信息',
+  `last_start_time` DATETIME DEFAULT NULL COMMENT '最近启动时间',
+  `last_stop_time` DATETIME DEFAULT NULL COMMENT '最近停止时间',
+  `created_by` VARCHAR(100) DEFAULT '' COMMENT '创建人',
+  `updated_by` VARCHAR(100) DEFAULT '' COMMENT '更新人',
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='实时开发任务';

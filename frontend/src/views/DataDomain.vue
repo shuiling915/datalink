@@ -1,15 +1,19 @@
 <template>
   <el-card>
-    <div style="margin-bottom: 20px; display: flex; justify-content: space-between;">
-      <div>
-        <el-input v-model="keyword" placeholder="搜索数据域" style="width: 300px;" clearable @clear="loadData" @keyup.enter="loadData">
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <el-input
+          v-model="keyword" placeholder="搜索数据域" class="search-input"
+          clearable @clear="loadData" @keyup.enter="loadData"
+        >
           <template #append>
             <el-button @click="loadData"><el-icon><Search /></el-icon></el-button>
           </template>
         </el-input>
       </div>
-      <el-button type="primary" @click="showDialog = true"><el-icon><Plus /></el-icon>新建数据域</el-button>
+      <el-button type="primary" @click="resetDialog"><el-icon><Plus /></el-icon>新建数据域</el-button>
     </div>
+
     <el-table :data="tableData" v-loading="loading" stripe>
       <el-table-column prop="domainCode" label="数据域编码" width="200" />
       <el-table-column prop="domainName" label="数据域名称" width="200" />
@@ -32,8 +36,9 @@
         </template>
       </el-table-column>
     </el-table>
+
     <el-pagination
-      style="margin-top: 20px; justify-content: flex-end;"
+      class="pagination"
       v-model:current-page="pageNum"
       v-model:page-size="pageSize"
       :total="total"
@@ -68,59 +73,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { dataDomainApi } from '@/api/datamodeling'
-import { ElMessage } from 'element-plus'
+import { useCrud } from '@/composables/useCrud'
 import { Search, Plus } from '@element-plus/icons-vue'
 
-const loading = ref(false)
-const tableData = ref([])
-const keyword = ref('')
-const pageNum = ref(1)
-const pageSize = ref(20)
-const total = ref(0)
-const showDialog = ref(false)
-const isEdit = ref(false)
-const editId = ref(null)
-const form = ref({ domainCode: '', domainName: '', description: '', owner: '', status: 1 })
-
-const loadData = async () => {
-  loading.value = true
-  try {
-    const res = await dataDomainApi.list({ pageNum: pageNum.value, pageSize: pageSize.value, keyword: keyword.value })
-    tableData.value = res.data.records
-    total.value = res.data.total
-  } finally {
-    loading.value = false
-  }
-}
-
-const handleEdit = (row) => {
-  isEdit.value = true
-  editId.value = row.id
-  form.value = { ...row }
-  showDialog.value = true
-}
-
-const handleDelete = async (id) => {
-  await dataDomainApi.delete(id)
-  ElMessage.success('删除成功')
-  loadData()
-}
-
-const handleSubmit = async () => {
-  if (isEdit.value) {
-    await dataDomainApi.update(editId.value, form.value)
-    ElMessage.success('更新成功')
-  } else {
-    await dataDomainApi.create(form.value)
-    ElMessage.success('创建成功')
-  }
-  showDialog.value = false
-  form.value = { domainCode: '', domainName: '', description: '', owner: '', status: 1 }
-  isEdit.value = false
-  loadData()
-}
+const defaultForm = { domainCode: '', domainName: '', description: '', owner: '', status: 1 }
+const { loading, tableData, keyword, pageNum, pageSize, total, showDialog, isEdit, form, loadData, handleEdit, handleDelete, handleSubmit, resetDialog } = useCrud(dataDomainApi, defaultForm)
 
 onMounted(loadData)
 </script>
+
+<style scoped>
+.toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.search-input { width: 300px; }
+.pagination { margin-top: 20px; justify-content: flex-end; }
+</style>

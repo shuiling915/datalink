@@ -240,6 +240,12 @@ public class DataModelingService {
     }
 
     @Transactional
+    public void deleteDimension(Long id) {
+        dimensionFieldMapper.delete(new LambdaQueryWrapper<DnDimensionField>().eq(DnDimensionField::getDimId, id));
+        dimensionMapper.deleteById(id);
+    }
+
+    @Transactional
     public void saveDimensionFields(Long dimId, List<DnDimensionField> fields) {
         dimensionFieldMapper.delete(new LambdaQueryWrapper<DnDimensionField>().eq(DnDimensionField::getDimId, dimId));
         for (int i = 0; i < fields.size(); i++) {
@@ -330,6 +336,12 @@ public class DataModelingService {
     public void updateFactTable(DnFactTable factTable) {
         factTable.setUpdatedAt(LocalDateTime.now());
         factTableMapper.updateById(factTable);
+    }
+
+    @Transactional
+    public void deleteFactTable(Long id) {
+        factFieldMapper.delete(new LambdaQueryWrapper<DnFactField>().eq(DnFactField::getFactId, id));
+        factTableMapper.deleteById(id);
     }
 
     @Transactional
@@ -444,6 +456,12 @@ public class DataModelingService {
     public void updateSummaryTable(DnSummaryTable summaryTable) {
         summaryTable.setUpdatedAt(LocalDateTime.now());
         summaryTableMapper.updateById(summaryTable);
+    }
+
+    @Transactional
+    public void deleteSummaryTable(Long id) {
+        summaryFieldMapper.delete(new LambdaQueryWrapper<DnSummaryField>().eq(DnSummaryField::getSummaryId, id));
+        summaryTableMapper.deleteById(id);
     }
 
     @Transactional

@@ -1,13 +1,12 @@
 <template>
-  <div class="sync-task-container">
+  <el-card>
     <div class="toolbar">
       <el-button type="primary" @click="handleAdd">
-        <el-icon><Plus /></el-icon>
-        新增同步任务
+        <el-icon><Plus /></el-icon>新增同步任务
       </el-button>
     </div>
 
-    <el-table :data="tasks" v-loading="loading" stripe style="width: 100%; margin-top: 16px;">
+    <el-table :data="tasks" v-loading="loading" stripe>
       <el-table-column prop="id" label="ID" width="80" />
       <el-table-column prop="taskName" label="任务名称" width="200" />
       <el-table-column prop="sourceDb" label="源库" width="120" />
@@ -29,11 +28,15 @@
         </template>
       </el-table-column>
       <el-table-column prop="createdAt" label="创建时间" width="180" />
-      <el-table-column label="操作" fixed="right" width="250">
+      <el-table-column label="操作" fixed="right" width="260">
         <template #default="{ row }">
           <el-button size="small" type="success" @click="handleRun(row)">执行</el-button>
-          <el-button size="small" @click="handleEdit(row)">编辑</el-button>
-          <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
+          <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
+          <el-popconfirm title="确定删除?" @confirm="handleDelete(row.id)">
+            <template #reference>
+              <el-button size="small" type="danger">删除</el-button>
+            </template>
+          </el-popconfirm>
         </template>
       </el-table-column>
     </el-table>
@@ -78,14 +81,14 @@
         <el-button type="primary" @click="handleSave">保存</el-button>
       </template>
     </el-dialog>
-  </div>
+  </el-card>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import api from '@/api/request'
+import { syncTaskApi, datasourceApi } from '@/api/dataDevelopment'
 
 const tasks = ref([])
 const datasources = ref([])
@@ -94,7 +97,7 @@ const dialogVisible = ref(false)
 const dialogTitle = ref('新增同步任务')
 const isEdit = ref(false)
 
-const form = ref({
+const defaultForm = {
   id: null,
   taskName: '',
   sourceDsId: null,
@@ -105,12 +108,13 @@ const form = ref({
   syncMode: 'full',
   partitionField: 'dt',
   status: 1
-})
+}
+const form = ref({ ...defaultForm })
 
 const loadTasks = async () => {
   loading.value = true
   try {
-    const res = await api.get('/datax/sync-tasks')
+    const res = await syncTaskApi.list()
     tasks.value = res.data || []
   } catch (e) {
     ElMessage.error('加载同步任务失败')
@@ -121,7 +125,7 @@ const loadTasks = async () => {
 
 const loadDatasources = async () => {
   try {
-    const res = await api.get('/datasource/list')
+    const res = await datasourceApi.list()
     datasources.value = (res.data || []).filter(ds => ds.status === 1)
   } catch (e) {
     console.error('加载数据源失败', e)
@@ -131,7 +135,7 @@ const loadDatasources = async () => {
 const handleAdd = () => {
   isEdit.value = false
   dialogTitle.value = '新增同步任务'
-  form.value = { id: null, taskName: '', sourceDsId: null, sourceDb: '', sourceTable: '', targetDb: 'ods', targetTable: '', syncMode: 'full', partitionField: 'dt', status: 1 }
+  form.value = { ...defaultForm }
   dialogVisible.value = true
 }
 
@@ -148,8 +152,11 @@ const handleSave = async () => {
     return
   }
   try {
-    const url = isEdit.value ? '/datax/sync-task/update' : '/datax/sync-task/create'
-    await api.post(url, form.value)
+    if (isEdit.value) {
+      await syncTaskApi.update(form.value)
+    } else {
+      await syncTaskApi.create(form.value)
+    }
     ElMessage.success('保存成功')
     dialogVisible.value = false
     loadTasks()
@@ -161,21 +168,20 @@ const handleSave = async () => {
 const handleRun = async (row) => {
   try {
     await ElMessageBox.confirm(`确认执行同步任务 "${row.taskName}"？`, '提示', { type: 'warning' })
-    await api.post('/datax/run', { syncTaskId: row.id })
+    await syncTaskApi.run(row.id)
     ElMessage.success('任务已提交执行')
   } catch (e) {
     if (e !== 'cancel') ElMessage.error('执行失败')
   }
 }
 
-const handleDelete = async (row) => {
+const handleDelete = async (id) => {
   try {
-    await ElMessageBox.confirm(`确认删除同步任务 "${row.taskName}"？`, '提示', { type: 'warning' })
-    await api.post(`/datax/sync-task/delete/${row.id}`)
+    await syncTaskApi.delete(id)
     ElMessage.success('删除成功')
     loadTasks()
   } catch (e) {
-    if (e !== 'cancel') ElMessage.error('删除失败')
+    ElMessage.error('删除失败')
   }
 }
 
@@ -196,5 +202,6 @@ onMounted(() => {
 .toolbar {
   display: flex;
   align-items: center;
+  margin-bottom: 20px;
 }
 </style>

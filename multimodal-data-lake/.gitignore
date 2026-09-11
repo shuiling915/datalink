@@ -1,0 +1,48 @@
+__pycache__/
+*.pyc
+.idea/
+.claude/
+app.log
+user_data.db
+nul
+*.egg-info/
+.env
+.env.local
+.env.*
+!.env.example
+temp/
+extract/
+
+# 前端
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# 临时文件
+temp_uploads/
+temp_extracted/
+.tmp/
+.aidiff/
+.worktrees/
+*.log
+
+# Agent 运行态
+agents/workspace/
+
+# Python 虚拟环境
+venv/
+
+# PID 文件
+*.pid
+
+# 运行时数据库
+logs/*.db
+
+# 日志目录
+logs/
+
+# PID 目录
+.pids/
+
+# 数据库文件
+*.db
