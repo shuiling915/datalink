@@ -44,8 +44,9 @@ mybatis-plus:
     log-impl: ${MYBATIS_LOG_IMPL:org.apache.ibatis.logging.nologging.NoLoggingImpl}
 
 # -------------------- Hive JDBC --------------------
+# 默认不配置 Hive URL（内网无 Hive 时不刷连接错误日志）；有 Hive 环境时通过 HIVE_URL 环境变量或系统管理页面配置
 hive:
-  url: ${HIVE_URL:jdbc:hive2://127.0.0.1:10800/default;auth=noSasl}
+  url: ${HIVE_URL:}
   username: ${HIVE_USERNAME:}
   password: ${HIVE_PASSWORD:}
   default-fs: ${HIVE_DEFAULT_FS:hdfs://localhost:8020}

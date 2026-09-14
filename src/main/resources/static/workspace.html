@@ -4463,6 +4463,18 @@ html, body {
                 <option value="">请选择项目</option>
               </select>
             </div>
+            <div id="projMemberAddArea" style="display:none;margin-bottom:12px;padding:12px;border:1px solid var(--border);border-radius:var(--radius);background:#fafafa;">
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <input id="projMemberUser" placeholder="用户名" style="flex:1;min-width:120px;height:32px;padding:0 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;">
+                <select id="projMemberRole" style="height:32px;padding:0 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;">
+                  <option value="member">成员</option>
+                  <option value="developer">开发者</option>
+                  <option value="admin">管理员</option>
+                  <option value="viewer">只读</option>
+                </select>
+                <button class="btn btn-primary btn-sm" onclick="projAddMember()">添加成员</button>
+              </div>
+            </div>
             <table style="width:100%;border-collapse:collapse;font-size:14px;">
               <thead><tr style="color:var(--text-muted);text-align:left;border-bottom:1px solid var(--border);">
                 <th style="padding:10px 8px;font-weight:500;">用户名</th><th style="padding:10px 8px;font-weight:500;">角色</th><th style="padding:10px 8px;font-weight:500;">操作</th>
@@ -12564,13 +12576,20 @@ function loadQualityRules() {
       if (res.code !== 0) return;
       var rules = res.data || [];
       var container = document.getElementById('qualityRulesContent');
+      var header = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">' +
+        '<h2 style="font-size:16px;font-weight:600;margin:0;">质量规则</h2>' +
+        '<div style="display:flex;gap:8px;">' +
+          '<button class="btn btn-sm" onclick="runAllQualityRules()">执行全部</button>' +
+          '<button class="btn btn-primary btn-sm" onclick="showAddRuleDialog()">+ 新建规则</button>' +
+        '</div>' +
+      '</div>';
       if (rules.length === 0) {
-        container.innerHTML = '<div style="padding:32px;text-align:center;color:var(--text-muted);">暂无质量规则，点击"新建规则"开始</div>';
+        container.innerHTML = header + '<div style="padding:32px;text-align:center;color:var(--text-muted);">暂无质量规则，点击"新建规则"开始</div>';
         return;
       }
       var typeLabels = { null_check:'空值检查', unique_check:'唯一性检查', value_range:'值域检查', regex_check:'正则检查', custom_sql:'自定义SQL' };
       var severityColors = { info:'#3b82f6', warning:'#f59e0b', error:'#ef4444' };
-      var html = '<table class="quality-rules-table"><thead><tr>' +
+      var html = header + '<table class="quality-rules-table"><thead><tr>' +
         '<th>规则名称</th><th>类型</th><th>数据库.表</th><th>字段</th><th>级别</th><th>状态</th><th>操作</th>' +
         '</tr></thead><tbody>';
       rules.forEach(function(r) {
@@ -14366,22 +14385,60 @@ function projDelete(id) {
 function loadProjectMembers() {
   var id = document.getElementById('projMemberSel').value;
   var tbody = document.getElementById('projMemberList');
-  if (!id) { tbody.innerHTML = '<tr><td colspan="3" style="padding:32px;text-align:center;color:var(--text-muted);">请先选择项目</td></tr>'; return; }
-  fetch('/api/project/' + id).then(function(r) { return r.json(); }).then(function(res) {
-    if (res.code !== 0 || !res.data) return;
-    var members = res.data.members ? JSON.parse(res.data.members) : [];
+  var addArea = document.getElementById('projMemberAddArea');
+  if (!id) {
+    tbody.innerHTML = '<tr><td colspan="3" style="padding:32px;text-align:center;color:var(--text-muted);">请先选择项目</td></tr>';
+    if (addArea) addArea.style.display = 'none';
+    return;
+  }
+  if (addArea) addArea.style.display = '';
+  fetch('/api/project/' + id + '/members').then(function(r) { return r.json(); }).then(function(res) {
+    if (res.code !== 0) return;
+    var members = res.data || [];
     if (members.length === 0) {
       tbody.innerHTML = '<tr><td colspan="3" style="padding:32px;text-align:center;color:var(--text-muted);">暂无成员</td></tr>';
       return;
     }
-    tbody.innerHTML = members.map(function(m, i) {
+    tbody.innerHTML = members.map(function(m) {
       return '<tr style="border-bottom:1px solid var(--border);">' +
         '<td style="padding:10px 8px;">' + escapeHtml(m.username || '') + '</td>' +
         '<td style="padding:10px 8px;">' + escapeHtml(m.role || '') + '</td>' +
-        '<td style="padding:10px 8px;"><button class="btn btn-sm" style="color:var(--error);" onclick="projRemoveMember(' + i + ')">移除</button></td>' +
+        '<td style="padding:10px 8px;"><button class="btn btn-sm" style="color:var(--error);" onclick="projRemoveMember(\'' + escapeHtml(m.username || '') + '\')">移除</button></td>' +
       '</tr>';
     }).join('');
   });
+}
+
+function projAddMember() {
+  var id = document.getElementById('projMemberSel').value;
+  var username = document.getElementById('projMemberUser').value.trim();
+  var role = document.getElementById('projMemberRole').value;
+  if (!id) { alert('请先选择项目'); return; }
+  if (!username) { alert('请输入用户名'); return; }
+  fetch('/api/project/' + id + '/members', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({username: username, role: role})
+  }).then(function(r) { return r.json(); }).then(function(res) {
+    if (res.code === 0) {
+      showToast(res.data || '添加成功', 'success');
+      document.getElementById('projMemberUser').value = '';
+      loadProjectMembers();
+    } else {
+      showToast('添加失败: ' + res.msg, 'error');
+    }
+  });
+}
+
+function projRemoveMember(username) {
+  var id = document.getElementById('projMemberSel').value;
+  if (!id || !username) return;
+  if (!confirm('确认移除成员 ' + username + ' ?')) return;
+  fetch('/api/project/' + id + '/members/' + encodeURIComponent(username), { method: 'DELETE' })
+    .then(function(r) { return r.json(); }).then(function(res) {
+      if (res.code === 0) { showToast('已移除', 'success'); loadProjectMembers(); }
+      else showToast('移除失败: ' + res.msg, 'error');
+    });
 }
 
 function loadProjectReleases() {
