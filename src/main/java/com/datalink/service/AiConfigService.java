@@ -1,9 +1,12 @@
 package com.datalink.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.datalink.common.Constants;
 import com.datalink.mapper.DlAiConfigMapper;
 import com.datalink.model.DlAiConfig;
+import com.datalink.util.CryptoUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -15,20 +18,28 @@ import java.util.List;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AiConfigService {
 
     private final DlAiConfigMapper mapper;
 
-    /** API Key 统一来自 ai-service/.env，本表不再存储密钥 */
+    /** 环境变量中的 API Key，作为兜底 */
     @Value("${datalink.ai.api-key:}")
     private String envApiKey;
+
+    @Value("${datalink.crypto.key:}")
+    private String cryptoKey;
 
     /** 列表（api_key 脱敏为掩码） */
     public List<DlAiConfig> list() {
         List<DlAiConfig> list = mapper.selectList(
                 new QueryWrapper<DlAiConfig>().orderByDesc("is_default").orderByDesc("id"));
         for (DlAiConfig c : list) {
-            c.setApiKey("");   // 密钥不在本表管理，也不下发到前端
+            if (c.getApiKey() != null && !c.getApiKey().isEmpty()) {
+                c.setApiKey(Constants.PASSWORD_MASK);
+            } else {
+                c.setApiKey("");
+            }
         }
         return list;
     }
@@ -39,7 +50,7 @@ public class AiConfigService {
             throw new IllegalArgumentException("配置名称不能为空");
         }
         c.setId(null);
-        c.setApiKey(null);   // 密钥不入库，统一在 ai-service/.env 配置
+        c.setApiKey(encryptKey(c.getApiKey()));
         c.setStatus(c.getStatus() == null ? 1 : c.getStatus());
         c.setIsDefault(0);
         c.setCreatedAt(LocalDateTime.now());
@@ -49,6 +60,7 @@ public class AiConfigService {
         if (count != null && count == 1) {
             setDefault(c.getId());
         }
+        c.setApiKey(c.getApiKey() != null ? Constants.PASSWORD_MASK : "");
         return c;
     }
 
@@ -65,7 +77,11 @@ public class AiConfigService {
         if (c.getStatus() != null) {
             ex.setStatus(c.getStatus());
         }
-        ex.setApiKey(null);   // 密钥不入库，统一在 ai-service/.env 配置
+        // 只有传入了新明文 key 才更新；空或掩码表示不修改
+        String newKey = encryptKey(c.getApiKey());
+        if (newKey != null) {
+            ex.setApiKey(newKey);
+        }
         mapper.updateById(ex);
     }
 
@@ -87,8 +103,38 @@ public class AiConfigService {
         }
     }
 
-    /** 测试连接用的 key —— 统一取 ai-service/.env 里配置的那把 */
+    /** 测试连接用的 key：优先用传入的明文，其次从数据库解密，最后兜底环境变量 */
     public String resolveTestKey(DlAiConfig c) {
+        // 1. 页面传入了新明文 key
+        String plain = c.getApiKey();
+        if (plain != null && !plain.isEmpty() && !Constants.PASSWORD_MASK.equals(plain)) {
+            return plain;
+        }
+        // 2. 从数据库解密已保存的 key
+        if (c.getId() != null) {
+            DlAiConfig saved = mapper.selectById(c.getId());
+            if (saved != null && saved.getApiKey() != null && !saved.getApiKey().isEmpty()) {
+                try {
+                    return CryptoUtil.decryptSafe(saved.getApiKey(), cryptoKey);
+                } catch (Exception e) {
+                    log.warn("解密已保存的 API Key 失败", e);
+                }
+            }
+        }
+        // 3. 兜底环境变量
         return envApiKey;
+    }
+
+    /** 将明文 key 加密；空/掩码返回 null 表示不更新 */
+    private String encryptKey(String plain) {
+        if (plain == null || plain.isEmpty() || Constants.PASSWORD_MASK.equals(plain)) {
+            return null;
+        }
+        try {
+            return CryptoUtil.encrypt(plain, cryptoKey);
+        } catch (Exception e) {
+            log.error("加密 API Key 失败", e);
+            throw new RuntimeException("保存 API Key 失败: " + e.getMessage());
+        }
     }
 }

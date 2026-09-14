@@ -1,7 +1,9 @@
 package com.datalink.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.datalink.mapper.DlAiConfigMapper;
 import com.datalink.mapper.DlSystemConfigMapper;
+import com.datalink.model.DlAiConfig;
 import com.datalink.model.DlSystemConfig;
 import com.datalink.model.dto.GenerateTableNameRequest;
 import com.datalink.util.CryptoUtil;
@@ -29,6 +31,7 @@ public class AiAssistService {
 
     private final ObjectMapper objectMapper;
     private final DlSystemConfigMapper systemConfigMapper;
+    private final DlAiConfigMapper aiConfigMapper;
 
     @Value("${datalink.ai.api-key:}")
     private String envApiKey;
@@ -56,27 +59,56 @@ public class AiAssistService {
 
     @PostConstruct
     public void reloadConfig() {
-        // API Key 优先从数据库读取（加密存储），环境变量作为兜底
-        String dbKey = getDbConfig("ai.api-key");
-        if (dbKey != null && !dbKey.isEmpty()) {
-            try {
-                this.apiKey = CryptoUtil.decryptSafe(dbKey, cryptoKey);
-            } catch (Exception e) {
-                log.warn("解密数据库中的 API Key 失败，回退到环境变量");
+        // 1. 优先从 dl_ai_config 表读取 is_default=1 的配置（API Key 加密存储）
+        DlAiConfig defaultCfg = null;
+        try {
+            List<DlAiConfig> defaults = aiConfigMapper.selectList(
+                    new QueryWrapper<DlAiConfig>().eq("is_default", 1).last("LIMIT 1"));
+            if (defaults != null && !defaults.isEmpty()) {
+                defaultCfg = defaults.get(0);
+            }
+        } catch (Exception e) {
+            log.warn("读取默认 AI 配置失败，回退到 system_config", e);
+        }
+
+        if (defaultCfg != null) {
+            this.provider = defaultCfg.getProvider() != null ? defaultCfg.getProvider() : envProvider;
+            this.baseUrl = defaultCfg.getBaseUrl() != null ? defaultCfg.getBaseUrl() : envBaseUrl;
+            this.model = defaultCfg.getModel() != null ? defaultCfg.getModel() : envModel;
+            if (defaultCfg.getApiKey() != null && !defaultCfg.getApiKey().isEmpty()) {
+                try {
+                    this.apiKey = CryptoUtil.decryptSafe(defaultCfg.getApiKey(), cryptoKey);
+                } catch (Exception e) {
+                    log.warn("解密默认配置的 API Key 失败，回退到环境变量", e);
+                    this.apiKey = envApiKey;
+                }
+            } else {
                 this.apiKey = envApiKey;
             }
         } else {
-            this.apiKey = envApiKey;
+            // 2. 兜底：从 dl_system_config 读取（单套配置入口保存的）
+            String dbKey = getDbConfig("ai.api-key");
+            if (dbKey != null && !dbKey.isEmpty()) {
+                try {
+                    this.apiKey = CryptoUtil.decryptSafe(dbKey, cryptoKey);
+                } catch (Exception e) {
+                    log.warn("解密数据库中的 API Key 失败，回退到环境变量");
+                    this.apiKey = envApiKey;
+                }
+            } else {
+                this.apiKey = envApiKey;
+            }
+            String dbModel = getDbConfig("ai.model");
+            this.model = (dbModel != null && !dbModel.isEmpty()) ? dbModel : envModel;
+            String dbUrl = getDbConfig("ai.base-url");
+            this.baseUrl = (dbUrl != null && !dbUrl.isEmpty()) ? dbUrl : envBaseUrl;
+            String dbProvider = getDbConfig("ai.provider");
+            this.provider = (dbProvider != null && !dbProvider.isEmpty()) ? dbProvider : envProvider;
         }
+
         if (this.apiKey == null || this.apiKey.isEmpty()) {
             log.warn("未配置 AI API Key —— 请在「系统设置 > AI 配置」中填写，或在 ai-service/.env 中设置 QWEN_API_KEY");
         }
-        String dbModel = getDbConfig("ai.model");
-        this.model = (dbModel != null && !dbModel.isEmpty()) ? dbModel : envModel;
-        String dbUrl = getDbConfig("ai.base-url");
-        this.baseUrl = (dbUrl != null && !dbUrl.isEmpty()) ? dbUrl : envBaseUrl;
-        String dbProvider = getDbConfig("ai.provider");
-        this.provider = (dbProvider != null && !dbProvider.isEmpty()) ? dbProvider : envProvider;
         log.info("AI config loaded: provider={}, model={}, baseUrl={}, keyConfigured={}", provider, model, baseUrl, apiKey != null && !apiKey.isEmpty());
     }
 

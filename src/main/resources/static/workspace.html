@@ -4743,10 +4743,7 @@ html, body {
                 <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:3px;">模型</label>
                 <input id="aiCfgModelInput" placeholder="qwen-plus" style="width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:14px;outline:none;margin-bottom:10px;">
                 <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:3px;">API Key</label>
-                <div style="border:1px dashed var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;color:var(--text-muted);background:var(--bg-hover);margin-bottom:8px;line-height:1.6;">
-                  请在 <code style="color:var(--text-regular);">ai-service/.env</code> 中配置<br>
-                  <span style="font-size:11px;">设置 <code>QWEN_API_KEY=你的密钥</code> 后重启服务生效；此处不再存储密钥</span>
-                </div>
+                <input id="aiCfgApiKey" type="password" placeholder="请输入 API Key，留空则不修改" style="width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;font-size:14px;outline:none;margin-bottom:8px;" autocomplete="new-password">
                 <div id="aiCfgMsg" style="font-size:12px;min-height:16px;margin-bottom:8px;"></div>
                 <div style="display:flex;gap:8px;justify-content:flex-end;">
                   <button class="btn btn-sm" onclick="aiCfgTest()">测试连接</button>
@@ -6382,6 +6379,7 @@ html, body {
     document.getElementById('aiCfgProviderSel').value = 'bailian';
     document.getElementById('aiCfgBase').value = '';
     document.getElementById('aiCfgModelInput').value = '';
+    document.getElementById('aiCfgApiKey').value = '';
     document.getElementById('aiCfgMsg').textContent = '';
     aiCfgOnProvider();
     document.getElementById('aiCfgModal').style.display = 'flex';
@@ -6395,6 +6393,7 @@ html, body {
     document.getElementById('aiCfgProviderSel').value = c.provider||'bailian';
     document.getElementById('aiCfgBase').value = c.baseUrl||'';
     document.getElementById('aiCfgModelInput').value = c.model||'';
+    document.getElementById('aiCfgApiKey').value = '';
     document.getElementById('aiCfgMsg').textContent = '';
     document.getElementById('aiCfgModal').style.display = 'flex';
   };
@@ -6405,8 +6404,8 @@ html, body {
       name: document.getElementById('aiCfgName').value.trim(),
       provider: document.getElementById('aiCfgProviderSel').value,
       baseUrl: document.getElementById('aiCfgBase').value.trim(),
-      model: document.getElementById('aiCfgModelInput').value.trim()
-      // apiKey 不再由页面提交：统一在 ai-service/.env 中配置
+      model: document.getElementById('aiCfgModelInput').value.trim(),
+      apiKey: document.getElementById('aiCfgApiKey').value
     };
   }
 

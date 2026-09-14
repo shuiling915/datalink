@@ -33,7 +33,9 @@ public class AiConfigController {
     @PostMapping
     public R<DlAiConfig> create(@RequestBody DlAiConfig body) {
         try {
-            return R.ok(aiConfigService.create(body));
+            DlAiConfig cfg = aiConfigService.create(body);
+            aiAssistService.reloadConfig();
+            return R.ok(cfg);
         } catch (Exception e) {
             return R.fail(e.getMessage());
         }
@@ -44,6 +46,7 @@ public class AiConfigController {
     public R<Void> update(@PathVariable Long id, @RequestBody DlAiConfig body) {
         try {
             aiConfigService.update(id, body);
+            aiAssistService.reloadConfig();
             return R.ok();
         } catch (Exception e) {
             return R.fail(e.getMessage());
@@ -54,6 +57,7 @@ public class AiConfigController {
     @DeleteMapping("/{id}")
     public R<Void> delete(@PathVariable Long id) {
         aiConfigService.delete(id);
+        aiAssistService.reloadConfig();
         return R.ok();
     }
 
@@ -61,6 +65,7 @@ public class AiConfigController {
     @PutMapping("/{id}/default")
     public R<Void> setDefault(@PathVariable Long id) {
         aiConfigService.setDefault(id);
+        aiAssistService.reloadConfig();
         return R.ok();
     }
 
