@@ -33,6 +33,13 @@ public class HiveService {
     private String hiveWarehouse;
 
     /**
+     * Hive 是否可用（已配置且连接池初始化成功）
+     */
+    public boolean isAvailable() {
+        return hiveConfig.isHiveAvailable();
+    }
+
+    /**
      * 生成 Hive ODS 建表 DDL
      */
     public String generateDDL(String sourceDb, String sourceTable, List<ColumnInfo> columns, String syncMode) {

@@ -106,6 +106,9 @@ public class HiveDdlController {
     @PostMapping("/execute")
     public R<Map<String, Object>> executeSQL(@RequestBody HiveExecuteRequest body) {
         try {
+            if (!hiveService.isAvailable()) {
+                return R.fail("Hive 未配置，请在系统管理中配置 Hive 连接");
+            }
             String sql = body.getSql();
             if (sql == null || sql.trim().isEmpty()) {
                 throw new BusinessException("SQL 不能为空");
@@ -167,7 +170,12 @@ public class HiveDdlController {
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
-            log.error("执行 HiveSQL 失败", e);
+            String msg = e.getMessage() == null ? "" : e.getMessage();
+            if (msg.contains("未配置") || msg.contains("未连接")) {
+                log.warn("HiveSQL 执行失败（配置问题）: {}", msg);
+            } else {
+                log.error("执行 HiveSQL 失败", e);
+            }
             // 把异常信息塞进 data 返回给前端
             Map<String, Object> errData = new java.util.HashMap<>();
             errData.put("error", e.getMessage());
@@ -190,6 +198,9 @@ public class HiveDdlController {
      */
     @PostMapping("/submit-execute")
     public R<Map<String, Object>> submitExecute(@RequestBody Map<String, Object> body) {
+        if (!hiveService.isAvailable()) {
+            return R.fail("Hive 未配置，请在系统管理中配置 Hive 连接");
+        }
         String sql = (String) body.get("sql");
         Long scriptId = body.get("scriptId") != null ? Long.valueOf(body.get("scriptId").toString()) : null;
         Long syncTaskId = body.get("syncTaskId") != null ? Long.valueOf(body.get("syncTaskId").toString()) : null;
@@ -219,6 +230,15 @@ public class HiveDdlController {
                                      @RequestParam(required = false) Long scriptId,
                                      @RequestParam(required = false) Long syncTaskId) {
         SseEmitter emitter = new SseEmitter(600000L);
+
+        if (!hiveService.isAvailable()) {
+            try {
+                emitter.send(SseEmitter.event().name("error").data(
+                        java.util.Collections.singletonMap("message", "Hive 未配置，请在系统管理中配置 Hive 连接")));
+                emitter.complete();
+            } catch (Exception ignored) {}
+            return emitter;
+        }
 
         // 兼容两种模式：旧的直接传 sql，新的传 executionId
         final String execSql;
