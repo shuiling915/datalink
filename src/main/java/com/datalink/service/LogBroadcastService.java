@@ -82,6 +82,15 @@ public class LogBroadcastService {
         payload.put("message", message);
         payload.put("time", LocalDateTime.now().format(FMT));
         String destination = "/topic/" + topic;
+        log.info("[WS] 广播 {} -> {}: {}", destination, level, message);
+        messagingTemplate.convertAndSend(destination, payload);
+    }
+
+    /**
+     * 原始数据广播 — 直接发送自定义 payload 到指定 destination
+     */
+    public void broadcastRaw(String destination, Object payload) {
+        log.info("[WS] 广播原始数据 {}", destination);
         messagingTemplate.convertAndSend(destination, payload);
     }
 }

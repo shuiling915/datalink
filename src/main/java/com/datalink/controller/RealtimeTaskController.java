@@ -131,6 +131,13 @@ public class RealtimeTaskController {
             public void onResult(Map<String, Object> result) {
                 logBroadcastService.broadcast("realtime-result", "OK", id, taskName,
                         "执行完成，耗时 " + (result.get("duration") != null ? result.get("duration") + "ms" : "N/A"));
+                if (result.get("columns") != null) {
+                    Map<String, Object> queryResult = new LinkedHashMap<>();
+                    queryResult.put("columns", result.get("columns"));
+                    queryResult.put("rows", result.get("rows"));
+                    queryResult.put("taskId", id);
+                    logBroadcastService.broadcastRaw("/topic/realtime-query-result", queryResult);
+                }
                 DlRealtimeTask update = new DlRealtimeTask();
                 update.setId(id);
                 update.setStatus("stopped");

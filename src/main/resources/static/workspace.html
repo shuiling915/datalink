@@ -8879,21 +8879,31 @@ var codeArea = {
 function updateLines() {}
 
 function initMonacoEditor() {
-  // 动态加载 loader.js，避免重复定义
+  if (window._monacoInitStarted) return;
+  window._monacoInitStarted = true;
   if (typeof require !== 'undefined' && require.config) {
     _initMonacoAfterLoader();
     return;
   }
   var s = document.createElement('script');
-  s.src = 'https://unpkg.com/monaco-editor@0.45.0/min/vs/loader.js';
+  s.src = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js';
   s.onload = function() { _initMonacoAfterLoader(); };
-  s.onerror = function() { console.warn('Monaco loader 加载失败，编辑器不可用'); };
+  s.onerror = function() {
+    console.warn('Monaco loader 加载失败，尝试备选 CDN');
+    var s2 = document.createElement('script');
+    s2.src = 'https://unpkg.com/monaco-editor@0.45.0/min/vs/loader.js';
+    s2.onload = function() { _initMonacoAfterLoader(); };
+    s2.onerror = function() { console.warn('Monaco loader 所有 CDN 加载失败，编辑器不可用'); };
+    document.head.appendChild(s2);
+  };
   document.head.appendChild(s);
 }
 
 function _initMonacoAfterLoader() {
+  if (window._monacoConfigured) return;
+  window._monacoConfigured = true;
   require.config({
-    paths: { vs: 'https://unpkg.com/monaco-editor@0.45.0/min/vs' },
+    paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' },
     'vs/nls': { availableLanguages: { '*': 'zh-cn' } }
   });
   require(['vs/editor/editor.main'], function() {
@@ -14480,6 +14490,7 @@ var rtCurrentTaskId = null;
 var rtEditor = null;
 var rtCurrentResultTab = 'result';
 var rtLogLines = [];
+var rtPendingContent = null;
 
 function showRealtimeView() {
   ['viewSql', 'viewIntegration', 'viewDatasource', 'viewWelcome'].forEach(function(id) {
@@ -14490,27 +14501,41 @@ function showRealtimeView() {
   if (rtView) { rtView.style.display = 'flex'; rtView.classList.add('active'); }
   showRealtimeLeftPanel();
   if (!rtEditor) {
-    setTimeout(function() {
-      if (typeof monaco !== 'undefined') {
-        rtEditor = monaco.editor.create(document.getElementById('rtEditor'), {
-          value: '-- Flink SQL\n-- CREATE TABLE kafka_source (\n--   ...\n-- ) WITH (\n--   \'connector\' = \'kafka\',\n--   ...\n-- );\n',
-          language: 'sql',
-          theme: 'vs',
-          fontSize: 13,
-          minimap: { enabled: false },
-          lineNumbers: 'on',
-          scrollBeyondLastLine: false,
-          automaticLayout: true
-        });
-        rtEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, function() { rtSaveTask(); });
-      }
-    }, 200);
+    initRtEditor();
   }
   var editorTabs = document.getElementById('editorTabs');
   if (editorTabs) editorTabs.style.display = 'none';
   var sharedResult = document.getElementById('sharedResultPanel');
   if (sharedResult) sharedResult.style.display = 'none';
   updateRtRightPanel();
+}
+
+function initRtEditor() {
+  if (rtEditor) return;
+  if (typeof monaco === 'undefined') {
+    setTimeout(initRtEditor, 300);
+    return;
+  }
+  var el = document.getElementById('rtEditor');
+  if (!el) { setTimeout(initRtEditor, 300); return; }
+  rtEditor = monaco.editor.create(el, {
+    value: rtPendingContent != null ? rtPendingContent : '-- Flink SQL\n',
+    language: 'sql',
+    theme: 'vs',
+    fontSize: 13,
+    minimap: { enabled: false },
+    lineNumbers: 'on',
+    scrollBeyondLastLine: false,
+    automaticLayout: true
+  });
+  rtEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, function() { rtSaveTask(); });
+  rtPendingContent = null;
+  var _rtAutoSaveTimer = null;
+  rtEditor.onDidChangeModelContent(function() {
+    if (!rtCurrentTaskId) return;
+    if (_rtAutoSaveTimer) clearTimeout(_rtAutoSaveTimer);
+    _rtAutoSaveTimer = setTimeout(function() { rtSaveTask(true); }, 1500);
+  });
 }
 
 function showRealtimeLeftPanel() {
@@ -14559,21 +14584,36 @@ function loadRealtimeTasks() {
 }
 
 function rtOpenTask(id) {
-  rtCurrentTaskId = id;
-  fetch('/api/realtime/' + id).then(function(r) { return r.json(); }).then(function(res) {
-    if (res.code !== 0) return;
-    var task = res.data;
-    document.getElementById('rtTaskName').textContent = task.taskName;
-    var statusEl = document.getElementById('rtTaskStatus');
-    statusEl.textContent = task.status || 'draft';
-    statusEl.className = 'realtime-task-status ' + (task.status || 'draft');
-    if (rtEditor) {
-      rtEditor.setValue(task.content || '');
-    }
-    loadRealtimeTasks();
-    updateRtRightPanel();
-    updateRtRightPanelWithTask(task);
-  });
+  var oldId = rtCurrentTaskId;
+  var doOpen = function() {
+    rtCurrentTaskId = id;
+    fetch('/api/realtime/' + id).then(function(r) { return r.json(); }).then(function(res) {
+      if (res.code !== 0) return;
+      var task = res.data;
+      document.getElementById('rtTaskName').textContent = task.taskName;
+      var statusEl = document.getElementById('rtTaskStatus');
+      statusEl.textContent = task.status || 'draft';
+      statusEl.className = 'realtime-task-status ' + (task.status || 'draft');
+      if (rtEditor) {
+        rtEditor.setValue(task.content || '');
+      } else {
+        rtPendingContent = task.content || '';
+      }
+      loadRealtimeTasks();
+      updateRtRightPanel();
+      updateRtRightPanelWithTask(task);
+    });
+  };
+  if (oldId && oldId !== id && rtEditor) {
+    var content = rtEditor.getValue();
+    fetch('/api/realtime/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: oldId, content: content })
+    }).then(function() { doOpen(); }).catch(function() { doOpen(); });
+  } else {
+    doOpen();
+  }
 }
 
 function rtNewTask() {
@@ -14608,8 +14648,8 @@ function rtDeleteTask(id) {
   });
 }
 
-function rtSaveTask() {
-  if (!rtCurrentTaskId) { alert('请先选择一个任务'); return Promise.resolve(); }
+function rtSaveTask(silent) {
+  if (!rtCurrentTaskId) { if (!silent) alert('请先选择一个任务'); return Promise.resolve(); }
   if (!rtEditor) return Promise.resolve();
   var content = rtEditor.getValue();
   return fetch('/api/realtime/save', {
@@ -14618,9 +14658,9 @@ function rtSaveTask() {
     body: JSON.stringify({ id: rtCurrentTaskId, content: content })
   }).then(function(r) { return r.json(); }).then(function(res) {
     if (res.code === 0) {
-      showToast('保存成功');
+      if (!silent) showToast('保存成功');
     } else {
-      alert('保存失败: ' + (res.msg || ''));
+      if (!silent) alert('保存失败: ' + (res.msg || ''));
     }
   });
 }
@@ -16215,17 +16255,32 @@ function closeAiScriptNameModal() {
 </script>
 <script>initMonacoEditor();</script>
 <script>
-// 动态加载 SockJS + Stomp
+// 动态加载 SockJS + Stomp（多 CDN 备选）
 (function() {
-  function loadScript(url, cb) {
+  var cdnList = [
+    'https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js',
+    'https://unpkg.com/sockjs-client@1.6.1/dist/sockjs.min.js'
+  ];
+  var stompCdnList = [
+    'https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js',
+    'https://unpkg.com/stompjs@2.3.3/lib/stomp.min.js'
+  ];
+
+  function loadScript(urls, cb, idx) {
+    idx = idx || 0;
+    if (idx >= urls.length) { console.warn('所有 CDN 加载失败: ' + urls[0]); cb(); return; }
     var s = document.createElement('script');
-    s.src = url;
-    s.onload = cb || function(){};
-    s.onerror = function() { console.warn('加载失败: ' + url); };
+    s.src = urls[idx];
+    s.onload = function() { cb(); };
+    s.onerror = function() { console.warn('加载失败，尝试备选: ' + urls[idx]); loadScript(urls, cb, idx + 1); };
     document.head.appendChild(s);
   }
-  loadScript('https://unpkg.com/sockjs-client@1.6.1/dist/sockjs.min.js', function() {
-    loadScript('https://unpkg.com/stompjs@2.3.3/lib/stomp.min.js', function() {
+
+  loadScript(cdnList, function() {
+    if (typeof SockJS === 'undefined') { console.warn('[WS] SockJS 加载失败'); return; }
+    loadScript(stompCdnList, function() {
+      if (typeof Stomp === 'undefined') { console.warn('[WS] Stomp 加载失败'); return; }
       if (typeof connectWebSocket === 'function') connectWebSocket();
     });
   });
@@ -16298,6 +16353,31 @@ function closeAiScriptNameModal() {
           // 刷新任务列表状态
           if (typeof loadRealtimeTasks === 'function') loadRealtimeTasks();
         });
+
+        // 订阅流式 SELECT 查询结果数据
+        stompClient.subscribe('/topic/realtime-query-result', function(msg) {
+          var data = JSON.parse(msg.body);
+          var cols = data.columns || [];
+          var rows = data.rows || [];
+          var panel = document.getElementById('rtResultPanel');
+          if (panel) panel.style.display = 'flex';
+          if (cols.length === 0) {
+            document.getElementById('rtResultBody').innerHTML = '<div class="rt-empty">查询完成，无返回数据</div>';
+            return;
+          }
+          var html = '<div style="margin-bottom:8px;color:var(--text-muted);font-size:12px;">' + rows.length + ' 行</div>';
+          html += '<table><thead><tr>';
+          cols.forEach(function(c) { html += '<th>' + escapeHtml(c) + '</th>'; });
+          html += '</tr></thead><tbody>';
+          rows.forEach(function(row) {
+            html += '<tr>';
+            cols.forEach(function(c, i) { html += '<td>' + escapeHtml(String(row[i] != null ? row[i] : '')) + '</td>'; });
+            html += '</tr>';
+          });
+          html += '</tbody></table>';
+          document.getElementById('rtResultBody').innerHTML = html;
+          rtSwitchResultTab('result');
+        });
       }, function() {
         wsConnected = false;
         console.log('[WS] Disconnected, retry in 5s');
@@ -16336,7 +16416,12 @@ function closeAiScriptNameModal() {
     }
   }
 
-  // WebSocket 连接由 CDN 脚本加载完成后自动触发，此处不重复调用
+  // 暴露到全局，供 CDN 脚本加载完成后调用
+  window.connectWebSocket = connectWebSocket;
+  // 若脚本已加载完成则立即连接
+  if (typeof SockJS !== 'undefined' && typeof Stomp !== 'undefined') {
+    connectWebSocket();
+  }
 })();
 </script>
 
