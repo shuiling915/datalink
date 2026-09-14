@@ -27,11 +27,15 @@ public class FlinkService {
 
     @PostConstruct
     public void init() {
+        if (gatewayUrl == null || gatewayUrl.trim().isEmpty()) {
+            log.info("Flink SQL Gateway 未配置，Flink 相关功能暂不可用");
+            return;
+        }
         try {
             createSession();
             log.info("Flink SQL Gateway 连接成功: {}", gatewayUrl);
         } catch (Exception e) {
-            log.error("Flink SQL Gateway 连接失败: {}", e.getMessage());
+            log.warn("Flink SQL Gateway 连接失败，Flink 功能暂不可用: {}", e.getMessage());
         }
     }
 
@@ -48,8 +52,7 @@ public class FlinkService {
             sessionHandle = node.get("sessionHandle").asText();
             log.info("Flink SQL Gateway Session 创建成功: {}", sessionHandle);
         } catch (Exception e) {
-            log.error("创建 SQL Gateway Session 失败: {}", e.getMessage());
-            throw new RuntimeException(e);
+            throw new RuntimeException("创建 SQL Gateway Session 失败: " + e.getMessage(), e);
         }
     }
 

@@ -52,6 +52,12 @@ hive:
   default-fs: ${HIVE_DEFAULT_FS:hdfs://localhost:8020}
   warehouse: ${HIVE_WAREHOUSE:/user/hive/warehouse}
 
+# -------------------- Flink SQL Gateway --------------------
+# 默认不配置（内网无 Flink 时不刷连接错误日志）；有 Flink 环境时通过 FLINK_GATEWAY_URL 环境变量配置
+flink:
+  gateway:
+    url: ${FLINK_GATEWAY_URL:}
+
 # -------------------- DataX 数据同步 --------------------
 datax:
   home: ${DATAX_HOME:/opt/datax}
