@@ -10,7 +10,7 @@ qwen_llm.py —— 可复用的大模型调用模块
 """
 from langchain.chat_models import init_chat_model
 
-from datanote_config import get_ai_config
+from datalink_config import get_ai_config
 
 # 模型只初始化一次（惰性单例），避免每次提问都重建
 _model = None
@@ -24,7 +24,7 @@ def get_model():
     """创建并返回大模型客户端；全局只初始化一次。
 
     配置来源统一走 get_ai_config()：
-    datanote「系统管理 → AI 配置」里设为默认的那套（api_key 在库里加密存），
+    datalink「系统管理 → AI 配置」里设为默认的那套（api_key 在库里加密存），
     读不到再回退 .env。这样页面上改模型或换 key，本模块会跟着生效，
     不会出现「页面改了但这里还用旧配置」的不一致。
     """
@@ -47,7 +47,7 @@ def get_model():
 def reset_model():
     """丢弃已缓存的客户端，下次调用时按最新配置重建。
 
-    在 datanote 页面上改完 AI 配置后调用，无需重启服务。
+    在 datalink 页面上改完 AI 配置后调用，无需重启服务。
     """
     global _model
     _model = None

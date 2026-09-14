@@ -1,5 +1,5 @@
 #!/bin/bash
-# 一键启动 DataNote AI 服务（对话 Agent + RAG 管理）
+# 一键启动 DataLink AI 服务（对话 Agent + RAG 管理）
 # 用法：./start-ai.sh          启动
 #      ./start-ai.sh stop     停止
 
@@ -7,9 +7,9 @@ set -e
 DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$DIR"
 
-# 数据库连接等参数从 datanote.conf 继承（与主应用共用一份配置）。
+# 数据库连接等参数从 datalink.conf 继承（与主应用共用一份配置）。
 # API Key 不在这里 —— 它只放在 ai-service/.env 里，由 python-dotenv 自行加载。
-CONF="$DIR/../datanote.conf"
+CONF="$DIR/../datalink.conf"
 if [ -f "$CONF" ]; then
   set -a
   # shellcheck disable=SC1090
@@ -33,7 +33,7 @@ if [ "$1" = "stop" ]; then
   exit 0
 fi
 
-echo "启动 DataNote AI 服务（Python: $PY）..."
+echo "启动 DataLink AI 服务（Python: $PY）..."
 
 "$PY" -m uvicorn prod_chat_service:app --port 8000 > /tmp/ai-chat.log 2>&1 &
 echo "  ▶ 对话Agent(需求管理) → http://localhost:8000  日志 /tmp/ai-chat.log"
@@ -42,4 +42,4 @@ echo "  ▶ 对话Agent(需求管理) → http://localhost:8000  日志 /tmp/ai-
 echo "  ▶ RAG管理(AI智能)     → http://localhost:8001  日志 /tmp/ai-rag.log"
 
 sleep 3
-echo "启动完成。配合 datanote(8099) 使用：需求管理 / AI智能 两个页面。"
+echo "启动完成。配合 datalink(8099) 使用：需求管理 / AI智能 两个页面。"

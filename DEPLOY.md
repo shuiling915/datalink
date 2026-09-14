@@ -1,16 +1,16 @@
-# DataNote 部署指南
+# DataLink 部署指南
 
 ## 部署流程
 
 ```
-datanote.conf                      ← 共享配置文件（端口、密码、模式等）
+datalink.conf                      ← 共享配置文件（端口、密码、模式等）
      ↓              ↓                    ↓
-setup-hive.sh    setup-datax.sh     setup-datanote.sh
-第一步：集群环境  第二步：DataX(可选)  第三步：DataNote
+setup-hive.sh    setup-datax.sh     setup-datalink.sh
+第一步：集群环境  第二步：DataX(可选)  第三步：DataLink
 （必装）          （按需开关）         （必装）
 ```
 
-三个脚本共享 `datanote.conf` 配置文件。端口冲突、DataX 模式切换等会自动写入配置，下游脚本自动读取。
+三个脚本共享 `datalink.conf` 配置文件。端口冲突、DataX 模式切换等会自动写入配置，下游脚本自动读取。
 
 ---
 
@@ -26,8 +26,8 @@ setup-hive.sh    setup-datax.sh     setup-datanote.sh
 ### 执行
 
 ```bash
-git clone https://github.com/datanote1018/datanote.git
-cd datanote
+git clone https://github.com/datalink1018/datalink.git
+cd datalink
 ./setup-hive.sh
 ```
 
@@ -52,15 +52,15 @@ cd datanote
 
 | 服务 | 容器名 | 宿主机端口 |
 |------|--------|-----------|
-| MySQL | datanote-mysql | 3306 |
-| HDFS NameNode | datanote-namenode | 9870（Web UI）/ 8020（RPC） |
-| HDFS DataNode | datanote-datanode | - |
-| Hive Metastore | datanote-metastore | 9083 |
-| HiveServer2 | datanote-hiveserver2 | 10800 |
+| MySQL | datalink-mysql | 3306 |
+| HDFS NameNode | datalink-namenode | 9870（Web UI）/ 8020（RPC） |
+| HDFS DataNode | datalink-datanode | - |
+| Hive Metastore | datalink-metastore | 9083 |
+| HiveServer2 | datalink-hiveserver2 | 10800 |
 
 ---
 
-## 第二步：安装 DataNote
+## 第二步：安装 DataLink
 
 ### 前提
 
@@ -70,7 +70,7 @@ cd datanote
 ### 执行
 
 ```bash
-./setup-datanote.sh
+./setup-datalink.sh
 ```
 
 脚本会自动：检查 Java → 检查 MySQL → 编译 JAR（首次）→ 初始化数据库（首次）→ 启动
@@ -104,15 +104,15 @@ cd datanote
 
 | 命令 | 说明 |
 |------|------|
-| `./setup-datanote.sh` | 启动 DataNote |
-| `./setup-datanote.sh stop` | 停止 DataNote |
+| `./setup-datalink.sh` | 启动 DataLink |
+| `./setup-datalink.sh stop` | 停止 DataLink |
 
 ### 文件说明
 
 | 文件 | 路径 |
 |------|------|
-| JAR 包 | `./target/datanote-1.0.0.jar` |
-| 运行日志 | `/tmp/datanote.log` |
+| JAR 包 | `./target/datalink-1.0.0.jar` |
+| 运行日志 | `/tmp/datalink.log` |
 | 初始化 SQL | `./sql/init-all.sql` |
 
 ---
@@ -170,7 +170,7 @@ pip install -r requirements.txt
 
 ## 关于加密密钥 CRYPTO_KEY
 
-`datanote.conf` 里的 `CRYPTO_KEY` 用于加密**数据源密码**等敏感字段。
+`datalink.conf` 里的 `CRYPTO_KEY` 用于加密**数据源密码**等敏感字段。
 
 **首次部署必须自己生成一把，不要使用固定值：**
 
@@ -178,12 +178,12 @@ pip install -r requirements.txt
 LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32; echo
 ```
 
-把结果填进 `datanote.conf` 的 `CRYPTO_KEY=`。
+把结果填进 `datalink.conf` 的 `CRYPTO_KEY=`。
 
 两个注意事项：
 
-- **`datanote.conf` 不在代码仓库里**（含密钥）。首次部署从模板复制：
-  `cp datanote.conf.example datanote.conf`
+- **`datalink.conf` 不在代码仓库里**（含密钥）。首次部署从模板复制：
+  `cp datalink.conf.example datalink.conf`
 - **换密钥后，之前加密存的数据会解不开**，需要在页面上重新录入数据源密码。
   所以这把密钥装好就别再改。
 
@@ -192,10 +192,10 @@ LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32; echo
 ## 常见问题
 
 **Q: setup-hive.sh test 失败？**
-检查容器是否都在运行：`docker ps`。查看 HiveServer2 日志：`docker logs datanote-hiveserver2`
+检查容器是否都在运行：`docker ps`。查看 HiveServer2 日志：`docker logs datalink-hiveserver2`
 
-**Q: DataNote 启动后页面打不开？**
-查看日志：`tail -50 /tmp/datanote.log`，通常是 MySQL 连接问题。
+**Q: DataLink 启动后页面打不开？**
+查看日志：`tail -50 /tmp/datalink.log`，通常是 MySQL 连接问题。
 
 **Q: 已有环境怎么知道 Hive 的连接信息？**
 问集群管理员，或查看 HiveServer2 所在机器的 `/etc/hive/conf/hive-site.xml`。

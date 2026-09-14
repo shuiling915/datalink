@@ -1,4 +1,4 @@
-# DataNote
+# DataLink
 
 **轻量级一站式数据平台** — 覆盖数据开发、实时计算、数据治理、数据湖、AI 辅助全链路。单 JAR 包即可运行。
 
@@ -11,16 +11,16 @@
 ## 平台架构
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     DataNote 一站式平台                       │
-├───────────┬───────────┬───────────┬───────────┬─────────────┤
-│  数据开发  │  实时开发  │  数据治理  │  数据湖   │   AI 智能   │
-│ HiveSQL   │ Flink SQL │ 质量监控   │ 多模态存储 │ NL2SQL     │
-│ 数据同步   │ 流式计算   │ 指标管理   │ 算子编排   │ SQL 优化   │
-│ 任务调度   │ 执行计划   │ 元数据管理 │ 文件处理   │ 知识库     │
-├───────────┴───────────┴───────────┴───────────┴─────────────┤
-│  基础设施：MySQL / Hive / Flink / DataX / Docker              │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│                         DataLink 一站式平台                            │
+├───────────┬───────────┬───────────┬───────────┬───────────┬──────────┤
+│  数据开发  │  实时开发  │  数据治理  │  数据湖   │   AI 智能  │  BI看板  │
+│ HiveSQL   │ Flink SQL │ 质量监控   │ 多模态存储 │ NL2SQL     │ DataEase │
+│ 数据同步   │ 流式计算   │ 指标管理   │ 算子编排   │ SQL 优化   │ 仪表板   │
+│ 任务调度   │ 执行计划   │ 元数据管理 │ 文件处理   │ 知识库     │ 多数据源  │
+├───────────┴───────────┴───────────┴───────────┴───────────┴──────────┤
+│  基础设施：MySQL / Hive / Flink / DataX / Docker / FastAPI             │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
 ## 模块说明
@@ -47,7 +47,13 @@
 - 可扩展算子编排（文本清洗、图像转换、文件压缩等 40+ 算子）
 - 知识图谱构建、向量化搜索
 - DORIS 告警引擎与巡检调度
-- React 前端，FastAPI 后端，本地文件存储 / S3 兼容
+-> React 前端，FastAPI 后端，本地文件存储 / S3 兼容
+
+### BI 看板
+- 集成 DataEase 开源 BI 工具（Docker 部署）
+- 拖拽式图表制作，支持 20+ 数据源（MySQL、Hive、ClickHouse 等）
+- 仪表板创建与管理，公共链接分享，iframe 嵌入
+- 默认地址 `http://localhost:8100`，账号 `admin / DataEase@123456`
 
 ### AI 智能
 - NL2SQL：自然语言转 SQL
@@ -78,7 +84,9 @@
 | 实时引擎 | Apache Flink 1.17 (Docker, SQL Gateway) |
 | 数据同步 | DataX |
 | 数据湖 API | Python 3 + FastAPI + LanceDB |
+| BI 工具 | DataEase (Docker) |
 | WebSocket | Spring WebSocket + STOMP |
+| AI 服务 | Python 3 + FastAPI + OpenAI SDK |
 
 ## 快速开始
 
@@ -86,11 +94,11 @@
 
 ```bash
 git clone git@github.com:shuiling915/datalink.git
-cd datanote
+cd datalink
 
 # 修改配置（MySQL 密码等）
-cp datanote.conf.example datanote.conf
-vi datanote.conf
+cp datalink.conf.example datalink.conf
+vi datalink.conf
 
 # 一键启动所有服务
 ./dn-up.sh
@@ -111,8 +119,8 @@ vi datanote.conf
 # 3. 启动 Flink 集群（需要实时开发时）
 cd flink-docker && docker-compose up -d
 
-# 4. 启动 DataNote（自动编译、建库）
-./setup-datanote.sh
+# 4. 启动 DataLink（自动编译、建库）
+./setup-datalink.sh
 ```
 
 ### 环境要求
@@ -127,7 +135,7 @@ cd flink-docker && docker-compose up -d
 
 ## 配置说明
 
-核心配置通过 `datanote.conf` 或环境变量：
+核心配置通过 `datalink.conf` 或环境变量：
 
 | 变量 | 说明 | 默认值 |
 |------|------|--------|
@@ -143,8 +151,8 @@ Hive / DataX / AI 等也可在页面配置：系统管理 → 数据源管理 / 
 ## 项目结构
 
 ```
-datanote/
-├── src/main/java/com/datanote/
+datalink/
+├── src/main/java/com/datalink/
 │   ├── controller/        # 30+ REST API 控制器
 │   │   ├── RealtimeTaskController.java   # 实时开发
 │   │   ├── DataDevelopmentController.java # 数据开发
@@ -212,7 +220,7 @@ python3 -m uvicorn backend.main:app --host 0.0.0.0 --port 27844
 
 ## 与同类项目对比
 
-| 特性 | DataNote | DataSphereStudio | Dinky | DolphinScheduler |
+| 特性 | DataLink | DataSphereStudio | Dinky | DolphinScheduler |
 |------|----------|-----------------|-------|-----------------|
 | 部署 | 单 JAR | Linkis + 多子项目 | Docker | 微服务集群 |
 | 前端 | 单 HTML SPA | React 多模块 | Ant Design Pro | Vue 3 |
@@ -225,4 +233,4 @@ python3 -m uvicorn backend.main:app --host 0.0.0.0 --port 27844
 
 ## 许可证
 
-[Apache License 2.0](LICENSE) © DataNote Team
+[Apache License 2.0](LICENSE) © DataLink Team

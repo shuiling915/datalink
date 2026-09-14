@@ -3,7 +3,7 @@
     <header class="top-nav">
       <div class="top-nav-inner">
         <div class="logo-area">
-          <span class="logo-text">DataNote</span>
+          <span class="logo-text">DataLink</span>
         </div>
         <nav class="phase-tabs">
           <div
@@ -80,24 +80,16 @@ const router = useRouter()
 
 const phases = [
   {
-    key: 'planning',
-    label: '规划',
-    icon: Setting,
+    key: 'modeling',
+    label: '建模',
+    icon: Grid,
     defaultPath: '/domains',
     children: [
       { path: '/domains', label: '数据域', icon: FolderOpened, desc: '定义业务数据域' },
       { path: '/processes', label: '业务过程', icon: Share, desc: '管理业务流程' },
       { path: '/wordroots', label: '词根', icon: Document, desc: '统一命名规范' },
       { path: '/modifiers', label: '修饰词', icon: Tickets, desc: '管理修饰词' },
-      { path: '/timeperiods', label: '时间周期', icon: Clock, desc: '定义时间粒度' }
-    ]
-  },
-  {
-    key: 'modeling',
-    label: '建模',
-    icon: Grid,
-    defaultPath: '/dimensions',
-    children: [
+      { path: '/timeperiods', label: '时间周期', icon: Clock, desc: '定义时间粒度' },
       { path: '/dimensions', label: '维度表', icon: Grid, desc: '维度建模设计' },
       { path: '/facttables', label: '事实表', icon: TrendCharts, desc: '事实表设计' },
       { path: '/summarytables', label: '汇总表', icon: OfficeBuilding, desc: '汇总表设计' },
@@ -127,7 +119,7 @@ const phases = [
 ]
 
 const activePhase = computed(() => {
-  return route.meta.phase || 'planning'
+  return route.meta.phase || 'modeling'
 })
 
 const activePhaseObj = computed(() => {
@@ -159,7 +151,7 @@ const currentSideMenu = computed(() => {
 
 const activeMenu = computed(() => route.path)
 
-const currentTitle = computed(() => route.meta.title || 'DataNote')
+const currentTitle = computed(() => route.meta.title || 'DataLink')
 
 const currentEnv = computed(() => {
   return 'DEV'

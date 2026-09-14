@@ -1,0 +1,388 @@
+package com.datalink.controller;
+
+import com.datalink.model.*;
+import com.datalink.service.DataMapService;
+import com.datalink.service.DataProfileService;
+import com.datalink.service.MetadataService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.*;
+
+/**
+ * 数据地图 Controller — 参数校验 + 调用 Service
+ */
+@Slf4j
+@RestController
+@RequestMapping("/api/metadata")
+@RequiredArgsConstructor
+@Tag(name = "数据地图", description = "元数据查询、AI搜索、收藏、评论等")
+public class MetadataController {
+
+    private final DataMapService dataMapService;
+    private final DataProfileService dataProfileService;
+    private final MetadataService metadataService;
+
+    private static final String NAME_PATTERN = "[a-zA-Z0-9_]+";
+
+    // ========== 基础元数据查询（Hive） ==========
+
+    @Operation(summary = "获取Hive数据库列表")
+    @GetMapping("/databases")
+    public R<List<String>> databases() {
+        try {
+            return R.ok(dataMapService.getHiveDatabases());
+        } catch (Exception e) {
+            log.error("获取数据库列表失败", e);
+            return R.fail("获取数据库列表失败");
+        }
+    }
+
+    @Operation(summary = "获取Hive表列表")
+    @GetMapping("/tables")
+    public R<List<String>> tables(@RequestParam String db) {
+        try {
+            return R.ok(dataMapService.getHiveTables(db));
+        } catch (Exception e) {
+            log.error("获取表列表失败", e);
+            return R.fail("获取表列表失败");
+        }
+    }
+
+    @Operation(summary = "获取Hive字段列表")
+    @GetMapping("/columns")
+    public R<List<ColumnInfo>> columns(@RequestParam String db, @RequestParam String table) {
+        try {
+            return R.ok(dataMapService.getHiveColumns(db, table));
+        } catch (Exception e) {
+            log.error("获取字段列表失败", e);
+            return R.fail("获取字段列表失败");
+        }
+    }
+
+    // ========== 搜索 ==========
+
+    @Operation(summary = "搜索表")
+    @GetMapping("/search")
+    public R<List<Map<String, Object>>> search(@RequestParam String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return R.ok(Collections.<Map<String, Object>>emptyList());
+        }
+        try {
+            return R.ok(dataMapService.searchTables(keyword.trim()));
+        } catch (Exception e) {
+            log.error("搜索失败", e);
+            return R.fail("搜索失败");
+        }
+    }
+
+    @Operation(summary = "AI智能搜索表")
+    @PostMapping("/ai-search")
+    public R<Map<String, Object>> aiSearch(@RequestBody Map<String, String> body) {
+        String query = body.get("query");
+        if (query == null || query.trim().isEmpty()) {
+            return R.fail("查询内容不能为空");
+        }
+        try {
+            return R.ok(dataMapService.aiSearch(query.trim()));
+        } catch (Exception e) {
+            log.error("AI搜索失败", e);
+            return R.fail("AI搜索失败");
+        }
+    }
+
+    @Operation(summary = "获取所有表列表（带元数据）")
+    @GetMapping("/all-tables")
+    public R<List<Map<String, Object>>> allTables(@RequestParam(required = false) String db) {
+        try {
+            List<Map<String, Object>> tables = dataMapService.getAllTablesSummary();
+            if (db != null && !db.isEmpty()) {
+                List<Map<String, Object>> filtered = new ArrayList<>();
+                for (Map<String, Object> t : tables) {
+                    if (db.equals(t.get("TABLE_SCHEMA"))) {
+                        filtered.add(t);
+                    }
+                }
+                return R.ok(filtered);
+            }
+            return R.ok(tables);
+        } catch (Exception e) {
+            log.error("获取表列表失败", e);
+            return R.fail("获取表列表失败");
+        }
+    }
+
+    // ========== 搜索历史 ==========
+
+    @Operation(summary = "获取最近搜索")
+    @GetMapping("/search-history")
+    public R<List<DlSearchHistory>> searchHistory() {
+        return R.ok(dataMapService.getSearchHistory());
+    }
+
+    @Operation(summary = "记录搜索历史")
+    @PostMapping("/search-history")
+    public R<String> addSearchHistory(@RequestBody DlSearchHistory history) {
+        dataMapService.addSearchHistory(history);
+        return R.ok("ok");
+    }
+
+    @Operation(summary = "清空搜索历史")
+    @DeleteMapping("/search-history")
+    public R<String> clearSearchHistory() {
+        dataMapService.clearSearchHistory("default");
+        return R.ok("已清空");
+    }
+
+    // ========== 收藏 ==========
+
+    @Operation(summary = "获取收藏列表")
+    @GetMapping("/favorites")
+    public R<List<DlTableFavorite>> favorites() {
+        return R.ok(dataMapService.getFavorites());
+    }
+
+    @Operation(summary = "收藏/取消收藏")
+    @PostMapping("/favorite/toggle")
+    public R<Map<String, Object>> toggleFavorite(@RequestBody Map<String, String> body) {
+        String db = body.get("databaseName");
+        String table = body.get("tableName");
+        if (db == null || db.isEmpty() || table == null || table.isEmpty()) {
+            return R.fail("参数不完整");
+        }
+        Map<String, Object> result = new HashMap<>();
+        result.put("favorited", dataMapService.toggleFavorite(db, table));
+        return R.ok(result);
+    }
+
+    @Operation(summary = "检查是否已收藏")
+    @GetMapping("/favorite/check")
+    public R<Map<String, Object>> checkFavorite(@RequestParam String db, @RequestParam String table) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("favorited", dataMapService.isFavorited(db, table));
+        return R.ok(result);
+    }
+
+    // ========== 热门表 ==========
+
+    @Operation(summary = "获取热门表")
+    @GetMapping("/popular")
+    public R<List<Map<String, Object>>> popular() {
+        try {
+            return R.ok(dataMapService.getPopularTables());
+        } catch (Exception e) {
+            log.error("获取热门表失败", e);
+            return R.fail("获取热门表失败");
+        }
+    }
+
+    // ========== 评论 ==========
+
+    @Operation(summary = "获取表评论列表")
+    @GetMapping("/comments")
+    public R<List<DlTableComment>> getComments(@RequestParam String db, @RequestParam String table) {
+        return R.ok(dataMapService.getComments(db, table));
+    }
+
+    @Operation(summary = "新增评论")
+    @PostMapping("/comments")
+    public R<DlTableComment> addComment(@RequestBody Map<String, String> body) {
+        String db = body.get("db");
+        String table = body.get("table");
+        String content = body.get("content");
+        if (db == null || db.isEmpty() || table == null || table.isEmpty()) {
+            return R.fail("参数不完整");
+        }
+        if (content == null || content.trim().isEmpty()) {
+            return R.fail("评论内容不能为空");
+        }
+        return R.ok(dataMapService.addComment(db, table, content));
+    }
+
+    @Operation(summary = "删除评论")
+    @DeleteMapping("/comments/{id}")
+    public R<String> deleteComment(@PathVariable Long id) {
+        dataMapService.deleteComment(id);
+        return R.ok("删除成功");
+    }
+
+    // ========== 数据预览 ==========
+
+    @Operation(summary = "数据预览")
+    @GetMapping("/preview")
+    public R<Map<String, Object>> preview(@RequestParam String db, @RequestParam String table) {
+        if (!db.matches(NAME_PATTERN) || !table.matches(NAME_PATTERN)) {
+            return R.fail("非法的库名或表名");
+        }
+        try {
+            return R.ok(dataMapService.preview(db, table));
+        } catch (Exception e) {
+            log.error("数据预览失败: {}.{}", db, table, e);
+            return R.fail("查询失败");
+        }
+    }
+
+    // ========== 数据探查 ==========
+
+    @Operation(summary = "数据探查")
+    @GetMapping("/profile")
+    public R<Map<String, Object>> profile(@RequestParam String db, @RequestParam String table) {
+        if (!db.matches(NAME_PATTERN) || !table.matches(NAME_PATTERN)) {
+            return R.fail("非法的库名或表名");
+        }
+        try {
+            return R.ok(dataMapService.profile(db, table));
+        } catch (Exception e) {
+            log.error("数据探查失败: {}.{}", db, table, e);
+            return R.fail("探查失败");
+        }
+    }
+
+    @Operation(summary = "获取 AI 数据探查报告（有缓存直接返回）")
+    @GetMapping("/profile/ai")
+    public R<Map<String, Object>> aiProfileGet(@RequestParam String db, @RequestParam String table) {
+        if (!db.matches(NAME_PATTERN) || !table.matches(NAME_PATTERN)) return R.fail("非法的库名或表名");
+        try {
+            DlDataProfile cached = dataProfileService.getCached(db, table);
+            if (cached == null) {
+                Map<String, Object> empty = new HashMap<>();
+                empty.put("exists", false);
+                return R.ok(empty);
+            }
+            Map<String, Object> data = new HashMap<>();
+            data.put("exists", true);
+            data.put("profileTime", cached.getProfileTime() != null ? cached.getProfileTime().toString() : "");
+            data.put("aiReport", cached.getAiReport());
+            data.put("rawStats", cached.getRawStats());
+            return R.ok(data);
+        } catch (Exception e) {
+            log.error("获取AI探查失败: {}.{}", db, table, e);
+            return R.fail("获取失败: " + e.getMessage());
+        }
+    }
+
+    @Operation(summary = "运行/刷新 AI 数据探查（重新收集统计并调用大模型）")
+    @PostMapping("/profile/ai/run")
+    public R<Map<String, Object>> aiProfileRun(@RequestParam String db, @RequestParam String table) {
+        if (!db.matches(NAME_PATTERN) || !table.matches(NAME_PATTERN)) return R.fail("非法的库名或表名");
+        try {
+            DlDataProfile record = dataProfileService.runProfile(db, table);
+            Map<String, Object> data = new HashMap<>();
+            data.put("exists", true);
+            data.put("profileTime", record.getProfileTime() != null ? record.getProfileTime().toString() : "");
+            data.put("aiReport", record.getAiReport());
+            data.put("rawStats", record.getRawStats());
+            return R.ok(data);
+        } catch (Exception e) {
+            log.error("AI探查运行失败: {}.{}", db, table, e);
+            return R.fail("探查失败: " + e.getMessage());
+        }
+    }
+
+    // ========== DDL / SQL ==========
+
+    @Operation(summary = "生成建表DDL和查询SQL")
+    @GetMapping("/ddl")
+    public R<Map<String, String>> ddl(@RequestParam String db, @RequestParam String table) {
+        if (!db.matches(NAME_PATTERN) || !table.matches(NAME_PATTERN)) {
+            return R.fail("非法的库名或表名");
+        }
+        try {
+            return R.ok(dataMapService.generateDdlAndSelect(db, table));
+        } catch (Exception e) {
+            log.error("获取DDL失败: {}.{}", db, table, e);
+            return R.fail("获取DDL失败");
+        }
+    }
+
+    // ========== 表详情 ==========
+
+    @Operation(summary = "获取表详情（基本信息+字段+元数据）")
+    @GetMapping("/table-detail")
+    public R<Map<String, Object>> tableDetail(@RequestParam String db, @RequestParam String table) {
+        if (!db.matches(NAME_PATTERN) || !table.matches(NAME_PATTERN)) {
+            return R.fail("非法的库名或表名");
+        }
+        try {
+            return R.ok(dataMapService.getTableDetail(db, table));
+        } catch (Exception e) {
+            log.error("获取表详情失败: {}.{}", db, table, e);
+            return R.fail("获取表详情失败");
+        }
+    }
+
+    // ========== 分区信息 ==========
+
+    @Operation(summary = "获取表分区列表")
+    @GetMapping("/partitions")
+    public R<List<Map<String, Object>>> partitions(@RequestParam String db, @RequestParam String table) {
+        if (!db.matches(NAME_PATTERN) || !table.matches(NAME_PATTERN)) {
+            return R.fail("非法的库名或表名");
+        }
+        try {
+            return R.ok(dataMapService.getPartitions(db, table));
+        } catch (Exception e) {
+            log.error("获取分区信息失败: {}.{}", db, table, e);
+            return R.fail("获取分区信息失败");
+        }
+    }
+
+    // ========== 按数据源元数据采集 ==========
+
+    @Operation(summary = "获取指定数据源的数据库列表")
+    @GetMapping("/datasource/{datasourceId}/databases")
+    public R<List<String>> datasourceDatabases(@PathVariable Long datasourceId) {
+        try {
+            return R.ok(metadataService.getDatabasesByDatasource(datasourceId));
+        } catch (Exception e) {
+            log.error("获取数据源数据库列表失败", e);
+            return R.fail("获取失败: " + e.getMessage());
+        }
+    }
+
+    @Operation(summary = "获取指定数据源指定库的表列表")
+    @GetMapping("/datasource/{datasourceId}/tables")
+    public R<List<String>> datasourceTables(@PathVariable Long datasourceId,
+                                            @RequestParam String db) {
+        try {
+            return R.ok(metadataService.getTablesByDatasource(datasourceId, db));
+        } catch (Exception e) {
+            log.error("获取数据源表列表失败", e);
+            return R.fail("获取失败: " + e.getMessage());
+        }
+    }
+
+    @Operation(summary = "获取指定数据源指定表的字段信息")
+    @GetMapping("/datasource/{datasourceId}/columns")
+    public R<List<ColumnInfo>> datasourceColumns(@PathVariable Long datasourceId,
+                                                 @RequestParam String db,
+                                                 @RequestParam String table) {
+        try {
+            return R.ok(metadataService.getColumnsByDatasource(datasourceId, db, table));
+        } catch (Exception e) {
+            log.error("获取数据源字段信息失败", e);
+            return R.fail("获取失败: " + e.getMessage());
+        }
+    }
+
+    @Operation(summary = "自动采集元数据同步到资产目录")
+    @PostMapping("/datasource/{datasourceId}/sync-assets")
+    @PreAuthorize("hasAuthority('metadata:edit')")
+    public R<Map<String, Object>> syncToAssets(@PathVariable Long datasourceId,
+                                               @RequestParam(required = false) String db,
+                                               @AuthenticationPrincipal UserDetails user) {
+        try {
+            String operator = user != null ? user.getUsername() : "anonymous";
+            return R.ok(metadataService.syncToAssets(datasourceId, db, operator));
+        } catch (Exception e) {
+            log.error("元数据采集同步失败", e);
+            return R.fail("采集失败: " + e.getMessage());
+        }
+    }
+}

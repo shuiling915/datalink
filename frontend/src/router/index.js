@@ -10,31 +10,31 @@ const routes = [
         path: 'domains',
         name: 'Domains',
         component: () => import('@/views/DataDomain.vue'),
-        meta: { title: '数据域', phase: 'planning' }
+        meta: { title: '数据域', phase: 'modeling' }
       },
       {
         path: 'processes',
         name: 'Processes',
         component: () => import('@/views/BusinessProcess.vue'),
-        meta: { title: '业务过程', phase: 'planning' }
+        meta: { title: '业务过程', phase: 'modeling' }
       },
       {
         path: 'wordroots',
         name: 'WordRoots',
         component: () => import('@/views/WordRoot.vue'),
-        meta: { title: '词根', phase: 'planning' }
+        meta: { title: '词根', phase: 'modeling' }
       },
       {
         path: 'modifiers',
         name: 'Modifiers',
         component: () => import('@/views/Modifier.vue'),
-        meta: { title: '修饰词', phase: 'planning' }
+        meta: { title: '修饰词', phase: 'modeling' }
       },
       {
         path: 'timeperiods',
         name: 'TimePeriods',
         component: () => import('@/views/TimePeriod.vue'),
-        meta: { title: '时间周期', phase: 'planning' }
+        meta: { title: '时间周期', phase: 'modeling' }
       },
       {
         path: 'dimensions',

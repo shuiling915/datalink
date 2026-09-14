@@ -12,21 +12,21 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-CONF_FILE="$SCRIPT_DIR/datanote.conf"
+CONF_FILE="$SCRIPT_DIR/datalink.conf"
 
 # ---------- 加载配置 ----------
 if [ ! -f "$CONF_FILE" ]; then
   echo "配置文件不存在，正在生成默认配置: $CONF_FILE"
   cat > "$CONF_FILE" <<'CONF'
-# DataNote 部署配置（两个脚本共享）
+# DataLink 部署配置（两个脚本共享）
 MYSQL_HOST=127.0.0.1
 MYSQL_PORT=3306
 # MySQL 口令：首次部署请自行填写，不要留空也不要用弱口令
 MYSQL_PASSWORD=
 HIVE_PORT=10800
 HDFS_WEB_PORT=9870
-DATANOTE_PORT=8099
-NETWORK=datanote-net
+DATALINK_PORT=8099
+NETWORK=datalink-net
 CONF
 fi
 
@@ -46,7 +46,7 @@ error() { echo -e "${RED}[ERROR]${NC} $1"; }
 # ---------- 停止 ----------
 if [ "$1" = "stop" ]; then
   info "停止 Hive 环境..."
-  for c in datanote-hiveserver2 datanote-metastore datanote-datanode datanote-namenode datanote-mysql; do
+  for c in datalink-hiveserver2 datalink-metastore datalink-datanode datalink-namenode datalink-mysql; do
     docker stop $c 2>/dev/null && docker rm $c 2>/dev/null && info "已停止 $c" || true
   done
   info "全部停止"
@@ -56,10 +56,10 @@ fi
 # ---------- 清理 ----------
 if [ "$1" = "clean" ]; then
   info "停止并清理所有容器和数据..."
-  for c in datanote-hiveserver2 datanote-metastore datanote-datanode datanote-namenode datanote-mysql; do
+  for c in datalink-hiveserver2 datalink-metastore datalink-datanode datalink-namenode datalink-mysql; do
     docker stop $c 2>/dev/null && docker rm $c 2>/dev/null || true
   done
-  docker volume rm datanote-mysql-data datanote-namenode-data datanote-datanode-data 2>/dev/null || true
+  docker volume rm datalink-mysql-data datalink-namenode-data datalink-datanode-data 2>/dev/null || true
   docker network rm $NETWORK 2>/dev/null || true
   info "清理完成"
   exit 0
@@ -68,20 +68,20 @@ fi
 # ---------- 测试连接 ----------
 if [ "$1" = "test" ]; then
   info "测试 HiveServer2 连接..."
-  docker exec datanote-hiveserver2 beeline -u 'jdbc:hive2://localhost:10000/default;auth=noSasl' -e 'SHOW DATABASES;' 2>/dev/null
+  docker exec datalink-hiveserver2 beeline -u 'jdbc:hive2://localhost:10000/default;auth=noSasl' -e 'SHOW DATABASES;' 2>/dev/null
   if [ $? -eq 0 ]; then
     info "HiveServer2 连接正常！"
     echo ""
-    echo "  连接信息（配置 DataNote 时使用）："
+    echo "  连接信息（配置 DataLink 时使用）："
     echo "  ─────────────────────────────────"
     echo "  HiveServer2:  localhost:${HIVE_PORT}"
     echo "  认证方式:      NOSASL"
     echo "  HDFS NameNode: hdfs://localhost:8020"
     echo "  MySQL:         localhost:${MYSQL_PORT} (root / ${MYSQL_PASSWORD})"
     echo ""
-    info "Hive 环境就绪，可以运行 ./setup-datanote.sh 安装 DataNote"
+    info "Hive 环境就绪，可以运行 ./setup-datalink.sh 安装 DataLink"
   else
-    error "HiveServer2 连接失败，请检查容器日志：docker logs datanote-hiveserver2"
+    error "HiveServer2 连接失败，请检查容器日志：docker logs datalink-hiveserver2"
   fi
   exit 0
 fi
@@ -116,7 +116,7 @@ check_port() {
       # 更新配置文件
       sed -i '' "s/^${conf_key}=.*/${conf_key}=${new_port}/" "$CONF_FILE" 2>/dev/null || \
       sed -i "s/^${conf_key}=.*/${conf_key}=${new_port}/" "$CONF_FILE"
-      info "已将 ${name} 端口改为 ${new_port}（已写入 datanote.conf）"
+      info "已将 ${name} 端口改为 ${new_port}（已写入 datalink.conf）"
       eval "${conf_key}=${new_port}"
       return 0  # 继续启动
     elif [ "$choice" = "2" ]; then
@@ -132,7 +132,7 @@ check_port() {
 
 SKIP_MYSQL=false
 # 只在首次创建 MySQL 容器时检测端口，重跑时 Docker 自己占着端口不算冲突
-if ! docker ps -a --format '{{.Names}}' | grep -q datanote-mysql; then
+if ! docker ps -a --format '{{.Names}}' | grep -q datalink-mysql; then
   check_port $MYSQL_PORT "MySQL" "MYSQL_PORT" || SKIP_MYSQL=true
 fi
 
@@ -173,12 +173,12 @@ wait_for() {
 ensure_metastore_utf8() {
   # Hive 3 的 MySQL metastore schema 里部分注释列可能是 latin1_bin。
   # 如果不修正，中文 COMMENT 写入后会变成永久的问号字节，数据地图无法恢复。
-  if ! docker ps -a --format '{{.Names}}' | grep -q datanote-mysql; then
-    warn "未检测到 datanote-mysql 容器，跳过 Metastore UTF-8 兜底修复"
+  if ! docker ps -a --format '{{.Names}}' | grep -q datalink-mysql; then
+    warn "未检测到 datalink-mysql 容器，跳过 Metastore UTF-8 兜底修复"
     return 0
   fi
 
-  docker exec datanote-mysql mysql -uroot -p"$MYSQL_PASSWORD" --default-character-set=utf8mb4 -e "\
+  docker exec datalink-mysql mysql -uroot -p"$MYSQL_PASSWORD" --default-character-set=utf8mb4 -e "\
 ALTER TABLE hive_metastore.COLUMNS_V2 MODIFY COLUMN \`COMMENT\` VARCHAR(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; \
 ALTER TABLE hive_metastore.PARTITION_KEYS MODIFY COLUMN PKEY_COMMENT VARCHAR(4000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; \
 ALTER TABLE hive_metastore.TABLE_PARAMS MODIFY COLUMN PARAM_VALUE MEDIUMTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; \
@@ -190,18 +190,18 @@ ALTER TABLE hive_metastore.DBS MODIFY COLUMN \`DESC\` VARCHAR(4000) CHARACTER SE
 # ==================== 1. MySQL ====================
 if [ "$SKIP_MYSQL" = "true" ]; then
   info "使用本地 MySQL（端口 ${MYSQL_PORT}）"
-elif docker ps -a --format '{{.Names}}' | grep -q datanote-mysql; then
+elif docker ps -a --format '{{.Names}}' | grep -q datalink-mysql; then
   info "MySQL 已存在，跳过"
 else
   info "启动 MySQL（端口 ${MYSQL_PORT}）..."
   docker run -d \
-    --name datanote-mysql \
+    --name datalink-mysql \
     --network $NETWORK \
     --hostname mysql \
     -p ${MYSQL_PORT}:3306 \
     -e MYSQL_ROOT_PASSWORD=$MYSQL_PASSWORD \
-    -e MYSQL_DATABASE=datanote \
-    -v datanote-mysql-data:/var/lib/mysql \
+    -e MYSQL_DATABASE=datalink \
+    -v datalink-mysql-data:/var/lib/mysql \
     -v "$SCRIPT_DIR/sql/init-all.sql":/docker-entrypoint-initdb.d/01_init.sql \
     --restart unless-stopped \
     mysql:8.0 \
@@ -210,7 +210,7 @@ else
     --default-authentication-plugin=mysql_native_password
 
   echo -n "等待 MySQL 启动"
-  wait_for "MySQL" "docker exec datanote-mysql mysqladmin ping -h localhost -p$MYSQL_PASSWORD" 20
+  wait_for "MySQL" "docker exec datalink-mysql mysqladmin ping -h localhost -p$MYSQL_PASSWORD" 20
 fi
 
 # Metastore 连接的 MySQL：Docker 内走容器网络（mysql:3306），本地走 host.docker.internal:实际端口
@@ -223,19 +223,19 @@ else
 fi
 
 # ==================== 2. HDFS NameNode ====================
-if docker ps -a --format '{{.Names}}' | grep -q datanote-namenode; then
+if docker ps -a --format '{{.Names}}' | grep -q datalink-namenode; then
   info "NameNode 已存在，跳过"
 else
   # 初始化卷权限（只 chown，不创建 current 子目录，否则镜像会跳过格式化）
   info "初始化 HDFS NameNode 数据卷..."
   docker run --rm --user root \
-    -v datanote-namenode-data:/data \
+    -v datalink-namenode-data:/data \
     apache/hadoop:3 \
     bash -c "chown -R hadoop:hadoop /data" 2>/dev/null || true
 
   info "启动 HDFS NameNode..."
   docker run -d \
-    --name datanote-namenode \
+    --name datalink-namenode \
     --platform linux/amd64 \
     --network $NETWORK \
     --hostname namenode \
@@ -245,7 +245,7 @@ else
     -e CORE-SITE.XML_fs.defaultFS="hdfs://namenode:8020" \
     -e HDFS-SITE.XML_dfs.replication=1 \
     -e HDFS-SITE.XML_dfs.permissions.enabled=false \
-    -v datanote-namenode-data:/tmp/hadoop-hadoop/dfs/name \
+    -v datalink-namenode-data:/tmp/hadoop-hadoop/dfs/name \
     --restart unless-stopped \
     apache/hadoop:3 \
     hdfs namenode
@@ -254,46 +254,46 @@ else
 fi
 
 # ==================== 3. HDFS DataNode ====================
-if docker ps -a --format '{{.Names}}' | grep -q datanote-datanode; then
+if docker ps -a --format '{{.Names}}' | grep -q datalink-datanode; then
   info "DataNode 已存在，跳过"
 else
   # 初始化卷权限和目录结构
   info "初始化 HDFS DataNode 数据卷..."
   docker run --rm --user root \
-    -v datanote-datanode-data:/data \
+    -v datalink-datanode-data:/data \
     apache/hadoop:3 \
     bash -c "mkdir -p /data && chown -R hadoop:hadoop /data" 2>/dev/null || true
 
   info "启动 HDFS DataNode..."
   docker run -d \
-    --name datanote-datanode \
+    --name datalink-datanode \
     --platform linux/amd64 \
     --network $NETWORK \
     --hostname datanode \
     -e CORE-SITE.XML_fs.defaultFS="hdfs://namenode:8020" \
     -e HDFS-SITE.XML_dfs.replication=1 \
-    -v datanote-datanode-data:/tmp/hadoop-hadoop/dfs/data \
+    -v datalink-datanode-data:/tmp/hadoop-hadoop/dfs/data \
     --restart unless-stopped \
     apache/hadoop:3 \
     hdfs datanode
 
   echo -n "等待 HDFS 就绪"
-  wait_for "HDFS" "docker exec datanote-namenode hdfs dfs -ls /" 20
+  wait_for "HDFS" "docker exec datalink-namenode hdfs dfs -ls /" 20
 fi
 
 # 初始化 HDFS 目录
 info "初始化 HDFS 目录..."
-docker exec datanote-namenode hdfs dfs -mkdir -p /user/hive/warehouse 2>/dev/null || true
-docker exec datanote-namenode hdfs dfs -mkdir -p /tmp 2>/dev/null || true
-docker exec datanote-namenode hdfs dfs -mkdir -p /tmp/hive 2>/dev/null || true
-docker exec datanote-namenode hdfs dfs -chmod -R 777 /user/hive/warehouse 2>/dev/null || true
-docker exec datanote-namenode hdfs dfs -chmod -R 777 /tmp 2>/dev/null || true
-docker exec datanote-namenode hdfs dfs -chmod -R 777 /tmp/hive 2>/dev/null || true
+docker exec datalink-namenode hdfs dfs -mkdir -p /user/hive/warehouse 2>/dev/null || true
+docker exec datalink-namenode hdfs dfs -mkdir -p /tmp 2>/dev/null || true
+docker exec datalink-namenode hdfs dfs -mkdir -p /tmp/hive 2>/dev/null || true
+docker exec datalink-namenode hdfs dfs -chmod -R 777 /user/hive/warehouse 2>/dev/null || true
+docker exec datalink-namenode hdfs dfs -chmod -R 777 /tmp 2>/dev/null || true
+docker exec datalink-namenode hdfs dfs -chmod -R 777 /tmp/hive 2>/dev/null || true
 
 # YARN 不启动（Tez local mode 不需要，省资源）
 
 # ==================== 6. Hive Metastore ====================
-if docker ps -a --format '{{.Names}}' | grep -q datanote-metastore; then
+if docker ps -a --format '{{.Names}}' | grep -q datalink-metastore; then
   info "Hive Metastore 已存在，跳过"
 else
   # 初始化 Metastore schema（首次必须）。
@@ -321,7 +321,7 @@ else
 
   info "启动 Hive Metastore..."
   docker run -d \
-    --name datanote-metastore \
+    --name datalink-metastore \
     --platform linux/amd64 \
     --network $NETWORK \
     --hostname metastore \
@@ -349,12 +349,12 @@ fi
 ensure_metastore_utf8
 
 # ==================== 5. HiveServer2 ====================
-if docker ps -a --format '{{.Names}}' | grep -q datanote-hiveserver2; then
+if docker ps -a --format '{{.Names}}' | grep -q datalink-hiveserver2; then
   info "HiveServer2 已存在，跳过"
 else
   info "启动 HiveServer2..."
   docker run -d \
-    --name datanote-hiveserver2 \
+    --name datalink-hiveserver2 \
     --platform linux/amd64 \
     --network $NETWORK \
     --hostname hiveserver2 \
@@ -378,13 +378,13 @@ else
 
   # amd64 镜像在 arm64 主机上走 QEMU 模拟，HiveServer2 首次绑定端口较慢，超时给足
   echo -n "等待 HiveServer2 就绪"
-  wait_for "HiveServer2" "docker exec datanote-hiveserver2 beeline -u 'jdbc:hive2://localhost:10000/default;auth=noSasl' -e 'SELECT 1;'" 120
+  wait_for "HiveServer2" "docker exec datalink-hiveserver2 beeline -u 'jdbc:hive2://localhost:10000/default;auth=noSasl' -e 'SELECT 1;'" 120
 fi
 
 # 创建数仓分层库
 info "创建数仓分层库（ods/dwd/dws/ads/dim）..."
 for db in ods dwd dws ads dim; do
-  docker exec datanote-hiveserver2 beeline -u 'jdbc:hive2://localhost:10000/default;auth=noSasl' \
+  docker exec datalink-hiveserver2 beeline -u 'jdbc:hive2://localhost:10000/default;auth=noSasl' \
     -e "CREATE DATABASE IF NOT EXISTS $db;" 2>/dev/null || true
 done
 
@@ -399,5 +399,5 @@ echo "  MySQL:        localhost:${MYSQL_PORT} (root / ${MYSQL_PASSWORD})"
 echo ""
 echo "  配置文件：$CONF_FILE"
 echo "  验证：./setup-hive.sh test"
-echo "  下一步：./setup-datanote.sh"
+echo "  下一步：./setup-datalink.sh"
 echo "============================================"

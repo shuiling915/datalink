@@ -1,21 +1,21 @@
--- DataNote 双环境 + 灰度发布体系
+-- DataLink 双环境 + 灰度发布体系
 
--- 1. 为 dn_script 增加环境字段
+-- 1. 为 dl_script 增加环境字段
 SET @s = (SELECT IF(
     (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-     WHERE TABLE_SCHEMA = 'datanote' AND TABLE_NAME = 'dn_script' AND COLUMN_NAME = 'environment') = 0,
-    'ALTER TABLE dn_script ADD COLUMN environment VARCHAR(16) DEFAULT ''dev'' COMMENT ''环境: dev/prod''',
+     WHERE TABLE_SCHEMA='datalink' AND TABLE_NAME = 'dl_script' AND COLUMN_NAME = 'environment') = 0,
+    'ALTER TABLE dl_script ADD COLUMN environment VARCHAR(16) DEFAULT ''dev'' COMMENT ''环境: dev/prod''',
     'SELECT ''environment already exists'' AS msg'
 ));
 PREPARE stmt FROM @s;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
--- 2. 为 dn_script 增加关联字段（dev脚本与prod脚本的关联）
+-- 2. 为 dl_script 增加关联字段（dev脚本与prod脚本的关联）
 SET @s = (SELECT IF(
     (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-     WHERE TABLE_SCHEMA = 'datanote' AND TABLE_NAME = 'dn_script' AND COLUMN_NAME = 'dev_script_id') = 0,
-    'ALTER TABLE dn_script ADD COLUMN dev_script_id BIGINT DEFAULT NULL COMMENT ''关联的开发环境脚本ID(prod环境用)''',
+     WHERE TABLE_SCHEMA='datalink' AND TABLE_NAME = 'dl_script' AND COLUMN_NAME = 'dev_script_id') = 0,
+    'ALTER TABLE dl_script ADD COLUMN dev_script_id BIGINT DEFAULT NULL COMMENT ''关联的开发环境脚本ID(prod环境用)''',
     'SELECT ''dev_script_id already exists'' AS msg'
 ));
 PREPARE stmt FROM @s;
@@ -24,8 +24,8 @@ DEALLOCATE PREPARE stmt;
 
 SET @s = (SELECT IF(
     (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
-     WHERE TABLE_SCHEMA = 'datanote' AND TABLE_NAME = 'dn_script' AND COLUMN_NAME = 'prod_script_id') = 0,
-    'ALTER TABLE dn_script ADD COLUMN prod_script_id BIGINT DEFAULT NULL COMMENT ''关联的生产环境脚本ID(dev环境用)''',
+     WHERE TABLE_SCHEMA='datalink' AND TABLE_NAME = 'dl_script' AND COLUMN_NAME = 'prod_script_id') = 0,
+    'ALTER TABLE dl_script ADD COLUMN prod_script_id BIGINT DEFAULT NULL COMMENT ''关联的生产环境脚本ID(dev环境用)''',
     'SELECT ''prod_script_id already exists'' AS msg'
 ));
 PREPARE stmt FROM @s;
@@ -33,7 +33,7 @@ EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
 -- 3. 脚本发布记录表
-CREATE TABLE IF NOT EXISTS dn_script_publish (
+CREATE TABLE IF NOT EXISTS dl_script_publish (
     id              BIGINT AUTO_INCREMENT PRIMARY KEY,
     dev_script_id   BIGINT       NOT NULL COMMENT '开发环境脚本ID',
     prod_script_id  BIGINT       DEFAULT NULL COMMENT '生产环境脚本ID',
@@ -67,4 +67,4 @@ CREATE TABLE IF NOT EXISTS dn_script_publish (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='脚本发布记录';
 
 -- 4. 更新已有脚本的 environment 字段为 dev
-UPDATE dn_script SET environment = 'dev' WHERE environment IS NULL;
+UPDATE dl_script SET environment = 'dev' WHERE environment IS NULL;

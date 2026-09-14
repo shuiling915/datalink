@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DataNote - 数据开发平台</title>
+<title>DataLink - 数据开发平台</title>
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
@@ -2745,6 +2745,118 @@ html, body {
   overflow: hidden; position: relative;
 }
 
+#viewBI.page-view {
+  max-width: none; margin: 0; padding: 0;
+  overflow: hidden; position: relative;
+}
+
+/* ===== AI BI 智能图表 ===== */
+#viewBiAi.page-view {
+  max-width: none; margin: 0; padding: 0;
+  height: calc(100vh - 56px); display: flex; flex-direction: column;
+  background: #f0f2f5;
+}
+.biai-header {
+  background: #fff; padding: 14px 24px; border-bottom: 1px solid #e8e8e8;
+  display: flex; align-items: center; gap: 12px;
+}
+.biai-header .section-title { margin: 0; flex-shrink: 0; }
+.biai-header p { margin: 0; color: var(--text-muted, #86909c); font-size: 13px; }
+.biai-body {
+  flex:1; display:flex; overflow:hidden;
+}
+.biai-chat {
+  width: 420px; min-width: 360px; background: #fff; border-right: 1px solid #e8e8e8;
+  display: flex; flex-direction: column;
+}
+.biai-messages {
+  flex: 1; overflow-y: auto; padding: 16px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.biai-msg { max-width: 92%; }
+.biai-msg.user { align-self: flex-end; }
+.biai-msg .bubble {
+  padding: 10px 14px; border-radius: 14px; line-height: 1.55; font-size: 14px;
+  word-break: break-word;
+}
+.biai-msg.user .bubble { background: #4f7cff; color: #fff; border-bottom-right-radius: 4px; }
+.biai-msg.ai .bubble { background: #f5f5f5; color: #333; border-bottom-left-radius: 4px; }
+.biai-msg .meta { font-size: 11px; color: #999; margin-top: 4px; }
+.biai-msg .meta.hint { color: #e6a23c; }
+.biai-inputbar {
+  display: flex; padding: 12px 16px; border-top: 1px solid #e8e8e8; gap: 8px;
+}
+.biai-input {
+  flex: 1; padding: 10px 14px; border: 1px solid #d9d9d9; border-radius: 24px; font-size: 14px;
+  outline: none; box-sizing: border-box;
+}
+.biai-input:focus { border-color: #4f7cff; }
+.biai-submit {
+  padding: 10px 20px; border: none; border-radius: 24px; background: #4f7cff; color: #fff;
+  font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap;
+}
+.biai-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+.biai-sql-block {
+  background: #1e1e2e; color: #cdd6f4; padding: 12px 16px; border-radius: 8px;
+  font-size: 12px; font-family: 'SF Mono','Monaco','Courier New',monospace;
+  max-height: 120px; overflow-y: auto; margin-top: 8px; cursor: pointer;
+  white-space: pre-wrap; word-break: break-all;
+}
+.biai-report { font-size: 13px; line-height: 1.7; color: #333; }
+.biai-report h1 { font-size: 18px; font-weight: 700; margin: 14px 0 8px; color: #1a1a2e; }
+.biai-report h2 { font-size: 16px; font-weight: 700; margin: 12px 0 6px; color: #1a1a2e; }
+.biai-report h3 { font-size: 14px; font-weight: 600; margin: 10px 0 4px; }
+.biai-report h4 { font-size: 13px; font-weight: 600; margin: 8px 0 4px; }
+.biai-report strong { color: #1a1a2e; }
+.biai-report ul { margin: 4px 0; padding-left: 18px; }
+.biai-report li { margin: 2px 0; }
+.biai-report table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 12px; }
+.biai-report th, .biai-report td { border: 1px solid #e0e0e0; padding: 6px 10px; text-align: left; }
+.biai-report th { background: #f5f7fa; color: #1a1a2e; font-weight: 600; }
+.biai-report blockquote { border-left: 3px solid #4f7cff; margin: 8px 0; padding: 6px 12px; background: #f8f9ff; color: #555; border-radius: 0 4px 4px 0; font-size: 12px; }
+.biai-report blockquote p { margin: 0; }
+.biai-report hr { border: none; border-top: 1px solid #e8e8e8; margin: 12px 0; }
+.biai-report .biai-code {
+  display: block; background: #1e1e2e; color: #cdd6f4; padding: 10px 14px;
+  border-radius: 6px; font-size: 11px; font-family: 'SF Mono','Courier New',monospace;
+  margin: 6px 0; overflow-x: auto; white-space: pre-wrap;
+}
+.biai-report code { background: #ffe8cc; color: #c25a00; padding: 1px 4px; border-radius: 3px; font-size: 12px; }
+.biai-report .biai-code code { background: none; color: inherit; padding: 0; }
+.biai-result {
+  flex: 1; display: flex; flex-direction: column; overflow: hidden;
+  padding: 20px 24px;
+}
+.biai-chart-wrap {
+  flex: 1; min-height: 400px; background: #fff; border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06); position: relative; overflow: hidden;
+}
+.biai-actions {
+  display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;
+}
+.biai-actions button {
+  padding: 6px 14px; border: 1px solid #d9d9d9; border-radius: 6px; background: #fff;
+  font-size: 12px; cursor: pointer;
+}
+.biai-actions button.active { background: #e8f0fe; border-color: #4f7cff; color: #4f7cff; }
+.biai-loading {
+  position: absolute; inset: 0; background: rgba(255,255,255,.85);
+  display: flex; align-items: center; justify-content: center; font-size: 14px; color: #4f7cff; z-index: 2;
+}
+.biai-loading .spinner {
+  width: 28px; height: 28px; border: 3px solid #e0e0e0; border-top-color: #4f7cff;
+  border-radius: 50%; animation: spin .8s linear infinite; margin-right: 10px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.biai-examples {
+  font-size: 12px; color: #86909c; margin-top: 6px;
+}
+.biai-examples span {
+  display: inline-block; padding: 3px 10px; margin: 3px 4px; background: #f0f2f5;
+  border-radius: 12px; cursor: pointer; transition: background .2s;
+}
+.biai-examples span:hover { background: #e5e6eb; }
+
 /* ===== Home Page — New Dashboard ===== */
 .home-stat-card {
   display: flex; align-items: center; gap: 14px;
@@ -3262,6 +3374,7 @@ html, body {
 #viewSettings ::-webkit-scrollbar-thumb:hover { background: #c9ccd1; }
 </style>
 <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://unpkg.com/monaco-editor@0.45.0/min/vs/editor/editor.main.css">
+<script defer src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 </head>
 <body>
 
@@ -3269,7 +3382,7 @@ html, body {
 <div class="dev-header">
   <a class="logo" href="#/home">
     <svg viewBox="0 0 28 28" fill="none"><rect x="2" y="2" width="24" height="24" rx="5" fill="#1890ff"/><path d="M8 9h12M8 14h8M8 19h10" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-    DataNote
+    DataLink
   </a>
   <nav class="header-tabs">
     <a class="header-tab" href="#/home" data-route="home">
@@ -3316,9 +3429,17 @@ html, body {
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1.5l1.6 3.4 3.7.4-2.8 2.5.8 3.6L8 9.9 4.7 11.9l.8-3.6L2.7 5.8l3.7-.4z"/></svg>
       AI智能
     </a>
+    <a class="header-tab" href="#/biai" data-route="biai">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2" width="14" height="12" rx="1.5"/><path d="M5 10l2-3 2 2 3-4"/><circle cx="4" cy="6" r="1.5"/></svg>
+      智能图表
+    </a>
     <a class="header-tab" href="#/lake" data-route="lake">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h12v10H2z"/><path d="M6 7v5"/><path d="M10 5v7"/><path d="M2 3l2-1h8l2 1"/></svg>
       数据湖
+    </a>
+    <a class="header-tab" href="#/bi" data-route="bi">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="14" height="14" rx="2"/><path d="M5 11V6l3 3 3-5v7"/></svg>
+      BI看板
     </a>
     <a class="header-tab" href="/vue/#/domains" data-route="datamodeling" target="_blank">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>
@@ -3647,9 +3768,10 @@ html, body {
         </h3>
         <input type="hidden" id="dsId">
         <div class="ds-form-row"><label>名称</label><input id="dsName" placeholder="如：本地 MySQL"></div>
-        <div class="ds-form-row"><label>类型</label><input id="dsType" value="MySQL" readonly></div>
+        <div class="ds-form-row"><label>类型</label><select id="dsType"><option value="mysql">MySQL</option><option value="postgresql">PostgreSQL</option><option value="clickhouse">ClickHouse</option><option value="oracle">Oracle</option><option value="hive">Hive</option></select></div>
         <div class="ds-form-row"><label>主机</label><input id="dsHost" placeholder="127.0.0.1"></div>
         <div class="ds-form-row"><label>端口</label><input id="dsPort" placeholder="3306" type="number"></div>
+        <div class="ds-form-row"><label>数据库</label><input id="dsDb" placeholder="数据库名"></div>
         <div class="ds-form-row"><label>用户名</label><input id="dsUser" placeholder="root"></div>
         <div class="ds-form-row"><label>密码</label><input id="dsPass" type="password" placeholder="密码"></div>
         <div class="ds-form-actions">
@@ -4300,20 +4422,71 @@ html, body {
           <div class="ops-dashboard" id="projectSpacePanel">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
               <h2 style="font-size:16px;font-weight:600;margin:0;">项目空间</h2>
+              <button class="btn btn-primary btn-sm" onclick="projShowCreate()">+ 新建项目</button>
             </div>
-            <div style="padding:32px;text-align:center;color:var(--text-muted);">项目创建、成员管理、资源配额和环境隔离<br><span class="m-tag tag-plan" style="margin-top:8px;display:inline-block;">规划中</span></div>
+            <table style="width:100%;border-collapse:collapse;font-size:14px;">
+              <thead><tr style="color:var(--text-muted);text-align:left;border-bottom:1px solid var(--border);">
+                <th style="padding:10px 8px;font-weight:500;">项目编码</th><th style="padding:10px 8px;font-weight:500;">项目名称</th>
+                <th style="padding:10px 8px;font-weight:500;">负责人</th><th style="padding:10px 8px;font-weight:500;">状态</th>
+                <th style="padding:10px 8px;font-weight:500;">创建时间</th><th style="padding:10px 8px;font-weight:500;">操作</th>
+              </tr></thead>
+              <tbody id="projList"></tbody>
+            </table>
+            <div id="projModal" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.4);align-items:center;justify-content:center;">
+              <div style="background:#fff;border-radius:10px;padding:24px;width:480px;">
+                <div id="projModalTitle" style="font-weight:600;font-size:16px;margin-bottom:16px;">新建项目</div>
+                <input type="hidden" id="projId">
+                <div class="ds-form-row"><label>项目编码</label><input id="projCode" placeholder="如：data_platform"></div>
+                <div class="ds-form-row"><label>项目名称</label><input id="projName" placeholder="如：数据中台"></div>
+                <div class="ds-form-row"><label>负责人</label><input id="projOwner" placeholder="如：admin"></div>
+                <div class="ds-form-row"><label>状态</label>
+                  <select id="projStatus" style="flex:1;height:32px;padding:0 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;">
+                    <option value="active">运行中</option><option value="inactive">已停用</option><option value="archived">已归档</option>
+                  </select>
+                </div>
+                <div class="ds-form-row"><label>资源配额</label><input id="projQuota" placeholder="如：CPU:8 内存:16G 存储:1T"></div>
+                <div class="ds-form-row" style="flex-direction:column;align-items:stretch;"><label style="margin-bottom:6px;">描述</label><textarea id="projDesc" rows="3" placeholder="项目描述" style="width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:8px;font-size:13px;resize:vertical;"></textarea></div>
+                <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
+                  <button class="btn btn-sm" onclick="document.getElementById('projModal').style.display='none'">取消</button>
+                  <button class="btn btn-primary btn-sm" onclick="projSave()">保存</button>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="ops-dashboard" id="projectMemberPanel" style="display:none;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
               <h2 style="font-size:16px;font-weight:600;margin:0;">成员权限</h2>
             </div>
-            <div style="padding:32px;text-align:center;color:var(--text-muted);">团队成员管理、角色分配和数据权限控制<br><span class="m-tag tag-plan" style="margin-top:8px;display:inline-block;">规划中</span></div>
+            <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">选择项目，管理其成员与角色。</div>
+            <div style="margin-bottom:12px;">
+              <select id="projMemberSel" onchange="loadProjectMembers()" style="height:32px;padding:0 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;min-width:240px;">
+                <option value="">请选择项目</option>
+              </select>
+            </div>
+            <table style="width:100%;border-collapse:collapse;font-size:14px;">
+              <thead><tr style="color:var(--text-muted);text-align:left;border-bottom:1px solid var(--border);">
+                <th style="padding:10px 8px;font-weight:500;">用户名</th><th style="padding:10px 8px;font-weight:500;">角色</th><th style="padding:10px 8px;font-weight:500;">操作</th>
+              </tr></thead>
+              <tbody id="projMemberList"><tr><td colspan="3" style="padding:32px;text-align:center;color:var(--text-muted);">请先选择项目</td></tr></tbody>
+            </table>
           </div>
           <div class="ops-dashboard" id="projectReleasePanel" style="display:none;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
               <h2 style="font-size:16px;font-weight:600;margin:0;">发布管理</h2>
             </div>
-            <div style="padding:32px;text-align:center;color:var(--text-muted);">版本发布流程、变更审批和上线记录<br><span class="m-tag tag-plan" style="margin-top:8px;display:inline-block;">规划中</span></div>
+            <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">查看项目下脚本与任务的发布历史。</div>
+            <div style="margin-bottom:12px;">
+              <select id="projReleaseSel" onchange="loadProjectReleases()" style="height:32px;padding:0 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;min-width:240px;">
+                <option value="">请选择项目</option>
+              </select>
+            </div>
+            <table style="width:100%;border-collapse:collapse;font-size:14px;">
+              <thead><tr style="color:var(--text-muted);text-align:left;border-bottom:1px solid var(--border);">
+                <th style="padding:10px 8px;font-weight:500;">脚本名称</th><th style="padding:10px 8px;font-weight:500;">环境</th>
+                <th style="padding:10px 8px;font-weight:500;">发布人</th><th style="padding:10px 8px;font-weight:500;">发布时间</th>
+              </tr></thead>
+              <tbody id="projReleaseList"><tr><td colspan="4" style="padding:32px;text-align:center;color:var(--text-muted);">请先选择项目</td></tr></tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -4476,33 +4649,40 @@ html, body {
           <div class="ops-dashboard" id="settingsDatasourcePanel" style="display:none;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
               <h2 style="font-size:16px;font-weight:600;margin:0;">数据源管理</h2>
+              <button class="btn btn-primary btn-sm" onclick="cfgDsShowCreate()">+ 新建数据源</button>
             </div>
-            <!-- Hive 连接状态 -->
-            <div id="hiveStatusBar" style="padding:8px 14px;border-radius:6px;font-size:13px;margin-bottom:16px;display:none;"></div>
-            <!-- Hive 连接配置 -->
-            <div style="max-width:520px;">
-              <div style="font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text-regular);">Hive 连接</div>
-              <div class="ds-form-row"><label>主机地址</label><input id="cfgHiveHost" placeholder="127.0.0.1" value="127.0.0.1"></div>
-              <div class="ds-form-row"><label>端口</label><input id="cfgHivePort" placeholder="10800" value="10800" type="number"></div>
-              <div class="ds-form-row"><label>认证方式</label>
-                <select id="cfgHiveAuth" style="flex:1;height:32px;padding:0 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;">
-                  <option value="noSasl">NOSASL（无认证）</option>
-                  <option value="plain">用户名密码</option>
-                  <option value="kerberos">Kerberos</option>
-                </select>
+            <table style="width:100%;border-collapse:collapse;font-size:14px;">
+              <thead><tr style="color:var(--text-muted);text-align:left;border-bottom:1px solid var(--border);">
+                <th style="padding:10px 8px;font-weight:500;">名称</th><th style="padding:10px 8px;font-weight:500;">类型</th>
+                <th style="padding:10px 8px;font-weight:500;">主机</th><th style="padding:10px 8px;font-weight:500;">端口</th>
+                <th style="padding:10px 8px;font-weight:500;">数据库</th><th style="padding:10px 8px;font-weight:500;">操作</th>
+              </tr></thead>
+              <tbody id="cfgDsList"></tbody>
+            </table>
+            <div id="cfgDsModal" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.4);align-items:center;justify-content:center;">
+              <div style="background:#fff;border-radius:10px;padding:24px;width:480px;">
+                <div id="cfgDsModalTitle" style="font-weight:600;font-size:16px;margin-bottom:16px;">新建数据源</div>
+                <input type="hidden" id="cfgDsId">
+                <div class="ds-form-row"><label>名称</label><input id="cfgDsName" placeholder="如：本地 MySQL"></div>
+                <div class="ds-form-row"><label>类型</label>
+                  <select id="cfgDsType" style="flex:1;height:32px;padding:0 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;">
+                    <option value="mysql">MySQL</option><option value="postgresql">PostgreSQL</option>
+                    <option value="clickhouse">ClickHouse</option><option value="oracle">Oracle</option>
+                    <option value="hive">Hive</option>
+                  </select>
+                </div>
+                <div class="ds-form-row"><label>主机</label><input id="cfgDsHost" placeholder="127.0.0.1"></div>
+                <div class="ds-form-row"><label>端口</label><input id="cfgDsPort" placeholder="3306" type="number"></div>
+                <div class="ds-form-row"><label>数据库</label><input id="cfgDsDb" placeholder="数据库名"></div>
+                <div class="ds-form-row"><label>用户名</label><input id="cfgDsUser" placeholder="root"></div>
+                <div class="ds-form-row"><label>密码</label><input id="cfgDsPass" type="password" placeholder="密码"></div>
+                <div id="cfgDsMsg" style="font-size:12px;min-height:16px;margin-bottom:8px;"></div>
+                <div style="display:flex;gap:8px;justify-content:flex-end;">
+                  <button class="btn btn-sm" onclick="cfgDsTest()">测试连接</button>
+                  <button class="btn btn-sm" onclick="document.getElementById('cfgDsModal').style.display='none'">取消</button>
+                  <button class="btn btn-primary btn-sm" onclick="cfgDsSave()">保存</button>
+                </div>
               </div>
-              <div class="ds-form-row"><label>用户名</label><input id="cfgHiveUser" placeholder="可选"></div>
-              <div class="ds-form-row"><label>密码</label><input id="cfgHivePass" type="password" placeholder="可选"></div>
-              <div class="ds-form-row"><label>默认库</label><input id="cfgHiveDb" placeholder="default" value="default"></div>
-              <div style="font-size:14px;font-weight:600;margin:20px 0 12px;color:var(--text-regular);">HDFS 配置</div>
-              <div class="ds-form-row"><label>NameNode</label><input id="cfgHdfsFs" placeholder="hdfs://localhost:8020" value="hdfs://localhost:8020"></div>
-              <div class="ds-form-row"><label>仓库路径</label><input id="cfgHdfsWarehouse" placeholder="/user/hive/warehouse" value="/user/hive/warehouse"></div>
-              <div style="display:flex;gap:8px;margin-top:16px;">
-                <button class="btn btn-sm" onclick="testHiveConnection()">测试 Hive 连接</button>
-                <button class="btn btn-sm" onclick="testHdfsConnection()">测试 HDFS 连接</button>
-                <button class="btn btn-primary btn-sm" onclick="saveDatasourceConfig()">保存配置</button>
-              </div>
-              <div id="hiveTestResult" style="margin-top:10px;font-size:13px;display:none;"></div>
             </div>
           </div>
           <div class="ops-dashboard" id="settingsEnvPanel" style="display:none;">
@@ -5418,8 +5598,52 @@ html, body {
   </div>
 </div>
 
+<div id="viewBiAi" class="page-view" style="display:none">
+  <div class="biai-header">
+    <div class="section-title">AI 智能图表</div>
+    <p>用自然语言描述你想要的数据图表，AI 自动查询并渲染</p>
+  </div>
+  <div class="biai-body">
+    <div class="biai-chat">
+      <div class="biai-messages" id="biaiMsgs">
+        <div class="biai-msg ai">
+          <div class="bubble">👋 你好！请描述你想要的数据图表。<br>例如：「各事业部销售额对比」「近7天新增用户趋势」「各品类销量占比」</div>
+        </div>
+      </div>
+      <div class="biai-inputbar">
+        <input id="biaiInput" class="biai-input" placeholder="输入你想看的图表描述..." onkeydown="if(event.key==='Enter')biAiSubmit()">
+        <button class="biai-submit" id="biaiSubmitBtn" onclick="biAiSubmit()">生成</button>
+      </div>
+    </div>
+    <div class="biai-result" id="biaiResult">
+      <div id="biaiChartWrap" class="biai-chart-wrap">
+        <div id="biaiRightPlaceholder" style="display:flex;align-items:center;justify-content:center;height:100%;color:#c0c4cc;font-size:15px;">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#c0c4cc" stroke-width="1.5" style="margin-right:12px;"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          左侧输入描述，生成智能图表
+        </div>
+        <div id="biaiRightContent" style="display:none;position:absolute;top:0;left:0;right:0;bottom:0;overflow-y:auto;padding:20px 24px;"></div>
+        <div id="biaiEcharts" style="display:none;position:absolute;top:0;left:0;right:0;bottom:0;"></div>
+        <div class="biai-loading" id="biaiLoading" style="display:none">
+          <div class="spinner"></div>正在生成图表…
+        </div>
+      </div>
+      <div class="biai-actions" id="biaiActions" style="display:none">
+        <button onclick="biAiSwitchChart('bar')" id="biaiBtnBar">柱状图</button>
+        <button onclick="biAiSwitchChart('line')" id="biaiBtnLine">折线图</button>
+        <button onclick="biAiSwitchChart('pie')" id="biaiBtnPie">饼图</button>
+        <button onclick="biAiSwitchChart('scatter')" id="biaiBtnScatter">散点图</button>
+        <button onclick="biAiCopySQL()" style="margin-left:auto;">复制SQL</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="viewLake" class="page-view" style="display:none">
   <iframe id="lakeIframe" src="http://localhost:27844" style="width:100%;height:100%;border:none;position:absolute;top:0;left:0;"></iframe>
+</div>
+
+<div id="viewBI" class="page-view" style="display:none">
+  <iframe id="biIframe" src="http://localhost:8100" style="width:100%;height:100%;border:none;position:absolute;top:0;left:0;"></iframe>
 </div>
 
 <script>
@@ -5983,7 +6207,7 @@ html, body {
   <div style="background:#fff;border-radius:12px;padding:36px 32px;width:340px;box-shadow:0 20px 60px rgba(0,0,0,.3);">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
       <svg viewBox="0 0 28 28" width="30" height="30" fill="none"><rect x="2" y="2" width="24" height="24" rx="5" fill="#1890ff"/><path d="M8 9h12M8 14h8M8 19h10" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-      <span style="font-size:20px;font-weight:700;color:#1f2225;">DataNote</span>
+      <span style="font-size:20px;font-weight:700;color:#1f2225;">DataLink</span>
     </div>
     <div style="font-size:13px;color:#767c82;margin-bottom:20px;">登录后使用数据平台与 AI 助手</div>
     <input id="loginUser" placeholder="用户名" style="width:100%;border:1px solid #e0e0e6;border-radius:6px;padding:11px 12px;font-size:14px;outline:none;margin-bottom:12px;">
@@ -6228,7 +6452,7 @@ html, body {
     <div style="margin-bottom:32px;display:flex;align-items:flex-end;justify-content:space-between;">
       <div>
         <div id="homeGreeting" style="font-size:24px;font-weight:700;color:var(--text-primary);"></div>
-        <div style="font-size:13px;color:var(--text-muted);margin-top:6px;">DataNote · 轻量级数据开发与治理平台</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-top:6px;">DataLink · 轻量级数据开发与治理平台</div>
       </div>
       <div style="display:flex;gap:8px;">
         <span style="font-size:11px;color:var(--text-muted);background:var(--divider);padding:4px 10px;border-radius:10px;">v1.0.0</span>
@@ -6971,17 +7195,37 @@ function ctxDelete() {
 
 function ctxNewDatasource() {
   ctxMenu.classList.remove('show');
-  // Open a new datasource edit tab
   var tmpId = 'new-' + Date.now();
   addOrActivateTab('tab-ds-' + tmpId, '新建数据源', 'datasource');
   document.getElementById('dsId').value = '';
   document.getElementById('dsName').value = '';
-  document.getElementById('dsType').value = 'MySQL';
+  document.getElementById('dsType').value = 'mysql';
   document.getElementById('dsHost').value = '';
   document.getElementById('dsPort').value = '3306';
+  document.getElementById('dsDb').value = '';
   document.getElementById('dsUser').value = '';
   document.getElementById('dsPass').value = '';
 }
+
+function getDefaultDsPort(type) {
+  var ports = { mysql: 3306, postgresql: 5432, clickhouse: 8123, oracle: 1521, hive: 10000 };
+  return ports[type] || 3306;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var dsTypeEl = document.getElementById('dsType');
+  if (dsTypeEl) {
+    dsTypeEl.addEventListener('change', function() {
+      document.getElementById('dsPort').value = getDefaultDsPort(this.value);
+    });
+  }
+  var cfgDsTypeEl = document.getElementById('cfgDsType');
+  if (cfgDsTypeEl) {
+    cfgDsTypeEl.addEventListener('change', function() {
+      document.getElementById('cfgDsPort').value = getCfgDefaultPort(this.value);
+    });
+  }
+});
 
 function ctxNewSyncTask() {
   ctxMenu.classList.remove('show');
@@ -8643,7 +8887,7 @@ function _initMonacoAfterLoader() {
   });
   require(['vs/editor/editor.main'], function() {
     // 定义暗色主题
-    monaco.editor.defineTheme('datanote-dark', {
+    monaco.editor.defineTheme('datalink-dark', {
       base: 'vs',
       inherit: true,
       rules: [],
@@ -8660,7 +8904,7 @@ function _initMonacoAfterLoader() {
     monacoEditor = monaco.editor.create(document.getElementById('monacoContainer'), {
       value: '-- 请在左侧选择或新建脚本',
       language: 'sql',
-      theme: 'datanote-dark',
+      theme: 'datalink-dark',
       fontSize: 13,
       fontFamily: "'SF Mono', 'Fira Code', 'Consolas', monospace",
       minimap: { enabled: false },
@@ -8767,7 +9011,7 @@ function formatSqlInEditor(ed) {
     range = model.getFullModelRange();
   }
 
-  var formatted = formatSqlDataNote(sql);
+  var formatted = formatSqlDataLink(sql);
   if (formatted === sql) return; // 没变化不操作
 
   // 用 executeEdits 替换，保留 undo 历史（Cmd+Z 可撤回）
@@ -8775,11 +9019,11 @@ function formatSqlInEditor(ed) {
 }
 
 /**
- * DataNote SQL 格式化引擎 v2
+ * DataLink SQL 格式化引擎 v2
  * 规范：关键字左对齐、逗号在前、子查询括号各占一行、注释安全
  * 格式化只改缩进和换行，不改 SQL 内容
  */
-function formatSqlDataNote(sql) {
+function formatSqlDataLink(sql) {
   if (!sql || !sql.trim()) return sql;
 
   // 按分号拆分多条语句，分别格式化
@@ -9210,6 +9454,7 @@ function saveDatasource() {
     type: document.getElementById('dsType').value,
     host: document.getElementById('dsHost').value,
     port: parseInt(document.getElementById('dsPort').value) || 3306,
+    databaseName: document.getElementById('dsDb').value,
     username: document.getElementById('dsUser').value,
     password: document.getElementById('dsPass').value
   };
@@ -9231,8 +9476,10 @@ function saveDatasource() {
 
 function testDatasource() {
   var ds = {
+    type: document.getElementById('dsType').value,
     host: document.getElementById('dsHost').value,
     port: parseInt(document.getElementById('dsPort').value) || 3306,
+    databaseName: document.getElementById('dsDb') ? document.getElementById('dsDb').value : '',
     username: document.getElementById('dsUser').value,
     password: document.getElementById('dsPass').value
   };
@@ -9247,7 +9494,7 @@ function testDatasource() {
 }
 
 // ===== File tree loading =====
-var FILE_TREE_OPEN_STATE_KEY = 'datanote:fileTreeOpenFolders';
+var FILE_TREE_OPEN_STATE_KEY = 'datalink:fileTreeOpenFolders';
 
 function getOpenFolderState() {
   try {
@@ -9395,9 +9642,10 @@ function openDatasource(el, dsId, dsName) {
       var d = res.data;
       document.getElementById('dsId').value = d.id;
       document.getElementById('dsName').value = d.name || '';
-      document.getElementById('dsType').value = d.type || 'MySQL';
+      document.getElementById('dsType').value = d.type || 'mysql';
       document.getElementById('dsHost').value = d.host || '';
       document.getElementById('dsPort').value = d.port || 3306;
+      document.getElementById('dsDb').value = d.databaseName || '';
       document.getElementById('dsUser').value = d.username || '';
       document.getElementById('dsPass').value = d.password || '';
     }
@@ -11099,7 +11347,9 @@ var ROUTES = {
   'settings':    { view: 'viewSettings',            layout: 'editor', init: function() { if(window.umLoadList) umLoadList(); } },
   'requirement': { view: 'viewRequirement',         layout: 'page',   init: function() { reqInit(); } },
   'ai':          { view: 'viewAI',                  layout: 'page',   init: function() { aiLoadList(); } },
-  'lake':        { view: 'viewLake',                layout: 'page',   init: null }
+  'lake':        { view: 'viewLake',                layout: 'page',   init: null },
+  'biai':        { view: 'viewBiAi',               layout: 'page',   init: null },
+  'bi':          { view: 'viewBI',                  layout: 'page',   init: null }
 };
 
 var currentRoute = null;
@@ -14016,9 +14266,142 @@ function switchProjectTab(el, tab) {
   el.parentElement.querySelectorAll('.ops-sidebar-item').forEach(function(t) { t.classList.remove('active'); });
   el.classList.add('active');
   ['projectSpacePanel', 'projectMemberPanel', 'projectReleasePanel'].forEach(function(id) { var p = document.getElementById(id); if (p) p.style.display = 'none'; });
-  if (tab === 'space') document.getElementById('projectSpacePanel').style.display = '';
-  else if (tab === 'member') document.getElementById('projectMemberPanel').style.display = '';
-  else if (tab === 'release') document.getElementById('projectReleasePanel').style.display = '';
+  if (tab === 'space') { document.getElementById('projectSpacePanel').style.display = ''; loadProjectList(); }
+  else if (tab === 'member') { document.getElementById('projectMemberPanel').style.display = ''; loadProjectSelectors('projMemberSel'); }
+  else if (tab === 'release') { document.getElementById('projectReleasePanel').style.display = ''; loadProjectSelectors('projReleaseSel'); }
+}
+
+function loadProjectList() {
+  fetch('/api/project/list').then(function(r) { return r.json(); }).then(function(res) {
+    var tbody = document.getElementById('projList');
+    if (!tbody) return;
+    if (res.code !== 0 || !res.data || res.data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="padding:32px;text-align:center;color:var(--text-muted);">暂无项目，点击「新建项目」创建</td></tr>';
+      return;
+    }
+    var statusLabels = { active: '运行中', inactive: '已停用', archived: '已归档' };
+    tbody.innerHTML = res.data.map(function(p) {
+      return '<tr style="border-bottom:1px solid var(--border);">' +
+        '<td style="padding:10px 8px;">' + escapeHtml(p.projectCode || '') + '</td>' +
+        '<td style="padding:10px 8px;">' + escapeHtml(p.projectName || '') + '</td>' +
+        '<td style="padding:10px 8px;">' + escapeHtml(p.owner || '') + '</td>' +
+        '<td style="padding:10px 8px;">' + (statusLabels[p.status] || p.status || '') + '</td>' +
+        '<td style="padding:10px 8px;">' + (p.createdAt ? p.createdAt.substring(0,10) : '') + '</td>' +
+        '<td style="padding:10px 8px;">' +
+          '<button class="btn btn-sm" onclick="projShowEdit(' + p.id + ')">编辑</button> ' +
+          '<button class="btn btn-sm" style="color:var(--error);" onclick="projDelete(' + p.id + ')">删除</button>' +
+        '</td>' +
+      '</tr>';
+    }).join('');
+  });
+}
+
+function loadProjectSelectors(selId) {
+  var sel = document.getElementById(selId);
+  if (!sel) return;
+  fetch('/api/project/list').then(function(r) { return r.json(); }).then(function(res) {
+    if (res.code !== 0 || !res.data) return;
+    sel.innerHTML = '<option value="">请选择项目</option>' + res.data.map(function(p) {
+      return '<option value="' + p.id + '">' + escapeHtml(p.projectName || p.projectCode) + '</option>';
+    }).join('');
+  });
+}
+
+function projShowCreate() {
+  document.getElementById('projModalTitle').textContent = '新建项目';
+  document.getElementById('projId').value = '';
+  document.getElementById('projCode').value = '';
+  document.getElementById('projName').value = '';
+  document.getElementById('projOwner').value = '';
+  document.getElementById('projStatus').value = 'active';
+  document.getElementById('projQuota').value = '';
+  document.getElementById('projDesc').value = '';
+  document.getElementById('projModal').style.display = 'flex';
+}
+
+function projShowEdit(id) {
+  fetch('/api/project/list').then(function(r) { return r.json(); }).then(function(res) {
+    if (res.code !== 0 || !res.data) return;
+    var p = res.data.find(function(d) { return d.id === id; });
+    if (!p) return;
+    document.getElementById('projModalTitle').textContent = '编辑项目';
+    document.getElementById('projId').value = p.id;
+    document.getElementById('projCode').value = p.projectCode || '';
+    document.getElementById('projName').value = p.projectName || '';
+    document.getElementById('projOwner').value = p.owner || '';
+    document.getElementById('projStatus').value = p.status || 'active';
+    document.getElementById('projQuota').value = p.resourceQuota || '';
+    document.getElementById('projDesc').value = p.description || '';
+    document.getElementById('projModal').style.display = 'flex';
+  });
+}
+
+function projSave() {
+  var id = document.getElementById('projId').value;
+  var body = {
+    projectCode: document.getElementById('projCode').value,
+    projectName: document.getElementById('projName').value,
+    owner: document.getElementById('projOwner').value,
+    status: document.getElementById('projStatus').value,
+    resourceQuota: document.getElementById('projQuota').value,
+    description: document.getElementById('projDesc').value
+  };
+  if (!body.projectName) { alert('请填写项目名称'); return; }
+  var url = id ? '/api/project/update' : '/api/project/create';
+  if (id) body.id = parseInt(id);
+  fetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) })
+    .then(function(r) { return r.json(); }).then(function(res) {
+      if (res.code === 0) { document.getElementById('projModal').style.display = 'none'; showToast('保存成功', 'success'); loadProjectList(); }
+      else showToast('保存失败: ' + res.msg, 'error');
+    });
+}
+
+function projDelete(id) {
+  if (!confirm('确定删除该项目？')) return;
+  fetch('/api/project/' + id, { method: 'DELETE' }).then(function(r) { return r.json(); }).then(function(res) {
+    if (res.code === 0) { showToast('删除成功', 'success'); loadProjectList(); }
+    else showToast('删除失败: ' + res.msg, 'error');
+  });
+}
+
+function loadProjectMembers() {
+  var id = document.getElementById('projMemberSel').value;
+  var tbody = document.getElementById('projMemberList');
+  if (!id) { tbody.innerHTML = '<tr><td colspan="3" style="padding:32px;text-align:center;color:var(--text-muted);">请先选择项目</td></tr>'; return; }
+  fetch('/api/project/' + id).then(function(r) { return r.json(); }).then(function(res) {
+    if (res.code !== 0 || !res.data) return;
+    var members = res.data.members ? JSON.parse(res.data.members) : [];
+    if (members.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="3" style="padding:32px;text-align:center;color:var(--text-muted);">暂无成员</td></tr>';
+      return;
+    }
+    tbody.innerHTML = members.map(function(m, i) {
+      return '<tr style="border-bottom:1px solid var(--border);">' +
+        '<td style="padding:10px 8px;">' + escapeHtml(m.username || '') + '</td>' +
+        '<td style="padding:10px 8px;">' + escapeHtml(m.role || '') + '</td>' +
+        '<td style="padding:10px 8px;"><button class="btn btn-sm" style="color:var(--error);" onclick="projRemoveMember(' + i + ')">移除</button></td>' +
+      '</tr>';
+    }).join('');
+  });
+}
+
+function loadProjectReleases() {
+  var id = document.getElementById('projReleaseSel').value;
+  var tbody = document.getElementById('projReleaseList');
+  if (!id) { tbody.innerHTML = '<tr><td colspan="4" style="padding:32px;text-align:center;color:var(--text-muted);">请先选择项目</td></tr>'; return; }
+  fetch('/api/data-development/publish-history/all?limit=50').then(function(r) { return r.json(); }).then(function(res) {
+    if (res.code !== 0 || !res.data) return;
+    var list = res.data;
+    if (list.length === 0) { tbody.innerHTML = '<tr><td colspan="4" style="padding:32px;text-align:center;color:var(--text-muted);">暂无发布记录</td></tr>'; return; }
+    tbody.innerHTML = list.map(function(h) {
+      return '<tr style="border-bottom:1px solid var(--border);">' +
+        '<td style="padding:10px 8px;">' + escapeHtml(h.scriptName || '') + '</td>' +
+        '<td style="padding:10px 8px;">' + escapeHtml(h.environment || '') + '</td>' +
+        '<td style="padding:10px 8px;">' + escapeHtml(h.publishBy || '') + '</td>' +
+        '<td style="padding:10px 8px;">' + (h.publishTime ? h.publishTime.substring(0,16) : '') + '</td>' +
+      '</tr>';
+    }).join('');
+  });
 }
 
 // ===== 系统管理 tab 切换 =====
@@ -14877,150 +15260,137 @@ function subjDelete(id) {
 
 // ===== 系统配置：数据源管理 =====
 function loadDatasourceConfig() {
-  // 加载 Hive 配置
-  api('/api/system/config/hive').then(function(res) {
-    if (res.code === 0 && res.data) {
-      var d = res.data;
-      // 从 URL 解析 host/port/db/auth
-      var url = d['hive.url'] || '';
-      if (url) {
-        var m = url.match(/jdbc:hive2:\/\/([^:\/]+):(\d+)\/([^;]*)/);
-        if (m) {
-          document.getElementById('cfgHiveHost').value = m[1];
-          document.getElementById('cfgHivePort').value = m[2];
-          document.getElementById('cfgHiveDb').value = m[3] || 'default';
-        }
-        document.getElementById('cfgHiveAuth').value = url.indexOf('auth=noSasl') >= 0 ? 'noSasl' : 'plain';
-      }
-      if (d['hive.username']) document.getElementById('cfgHiveUser').value = d['hive.username'];
-      if (d['hive.password']) document.getElementById('cfgHivePass').value = d['hive.password'];
+  fetch('/api/datasource/list').then(function(r) { return r.json(); }).then(function(res) {
+    var tbody = document.getElementById('cfgDsList');
+    if (!tbody) return;
+    if (res.code !== 0 || !res.data || res.data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="padding:32px;text-align:center;color:var(--text-muted);">暂无数据源，点击右上方「新建数据源」添加</td></tr>';
+      return;
     }
-  });
-  // 加载 HDFS 配置
-  api('/api/system/config/hdfs').then(function(res) {
-    if (res.code === 0 && res.data) {
-      if (res.data['hdfs.default-fs']) document.getElementById('cfgHdfsFs').value = res.data['hdfs.default-fs'];
-      if (res.data['hdfs.warehouse']) document.getElementById('cfgHdfsWarehouse').value = res.data['hdfs.warehouse'];
-    }
-  });
-  // 加载连接状态
-  api('/api/system/config/hive-status').then(function(res) {
-    var bar = document.getElementById('hiveStatusBar');
-    if (res.code === 0 && res.data) {
-      bar.style.display = '';
-      if (res.data.available) {
-        bar.style.background = 'rgba(82,196,26,.08)';
-        bar.style.color = '#52c41a';
-        bar.innerHTML = '● Hive 已连接';
-      } else if (res.data.url) {
-        bar.style.background = 'rgba(250,173,20,.08)';
-        bar.style.color = '#faad14';
-        bar.innerHTML = '⚠ Hive 配置已保存，但连接不可用';
-      } else {
-        bar.style.background = 'rgba(0,0,0,.03)';
-        bar.style.color = 'var(--text-muted)';
-        bar.innerHTML = '○ Hive 未配置 — 请填写以下信息后保存';
-      }
-    }
+    var typeLabels = { mysql: 'MySQL', postgresql: 'PostgreSQL', clickhouse: 'ClickHouse', oracle: 'Oracle', hive: 'Hive' };
+    tbody.innerHTML = res.data.map(function(ds) {
+      return '<tr style="border-bottom:1px solid var(--border);">' +
+        '<td style="padding:10px 8px;">' + escapeHtml(ds.name) + '</td>' +
+        '<td style="padding:10px 8px;">' + (typeLabels[ds.type] || ds.type) + '</td>' +
+        '<td style="padding:10px 8px;">' + escapeHtml(ds.host || '') + '</td>' +
+        '<td style="padding:10px 8px;">' + (ds.port || '') + '</td>' +
+        '<td style="padding:10px 8px;">' + escapeHtml(ds.databaseName || '') + '</td>' +
+        '<td style="padding:10px 8px;">' +
+          '<button class="btn btn-sm" onclick="cfgDsTestOne(' + ds.id + ')">测试</button> ' +
+          '<button class="btn btn-sm" onclick="cfgDsShowEdit(' + ds.id + ')">编辑</button> ' +
+          '<button class="btn btn-sm" style="color:var(--error);" onclick="cfgDsDelete(' + ds.id + ')">删除</button>' +
+        '</td>' +
+      '</tr>';
+    }).join('');
   });
 }
 
-function testHiveConnection() {
-  var result = document.getElementById('hiveTestResult');
-  result.style.display = '';
-  result.style.color = 'var(--text-muted)';
-  result.textContent = '连接中...';
+function getCfgDefaultPort(type) {
+  var ports = { mysql: 3306, postgresql: 5432, clickhouse: 8123, oracle: 1521, hive: 10000 };
+  return ports[type] || 3306;
+}
 
-  var body = {
-    host: document.getElementById('cfgHiveHost').value || '127.0.0.1',
-    port: document.getElementById('cfgHivePort').value || '10800',
-    authMode: document.getElementById('cfgHiveAuth').value,
-    database: document.getElementById('cfgHiveDb').value || 'default',
-    username: document.getElementById('cfgHiveUser').value,
-    password: document.getElementById('cfgHivePass').value
+function cfgDsShowCreate() {
+  document.getElementById('cfgDsModalTitle').textContent = '新建数据源';
+  document.getElementById('cfgDsId').value = '';
+  document.getElementById('cfgDsName').value = '';
+  document.getElementById('cfgDsType').value = 'mysql';
+  document.getElementById('cfgDsHost').value = '';
+  document.getElementById('cfgDsPort').value = '3306';
+  document.getElementById('cfgDsDb').value = '';
+  document.getElementById('cfgDsUser').value = '';
+  document.getElementById('cfgDsPass').value = '';
+  document.getElementById('cfgDsMsg').textContent = '';
+  document.getElementById('cfgDsModal').style.display = 'flex';
+}
+
+function cfgDsShowEdit(id) {
+  fetch('/api/datasource/list').then(function(r) { return r.json(); }).then(function(res) {
+    if (res.code !== 0 || !res.data) return;
+    var ds = res.data.find(function(d) { return d.id === id; });
+    if (!ds) return;
+    document.getElementById('cfgDsModalTitle').textContent = '编辑数据源';
+    document.getElementById('cfgDsId').value = ds.id;
+    document.getElementById('cfgDsName').value = ds.name || '';
+    document.getElementById('cfgDsType').value = ds.type || 'mysql';
+    document.getElementById('cfgDsHost').value = ds.host || '';
+    document.getElementById('cfgDsPort').value = ds.port || getCfgDefaultPort(ds.type);
+    document.getElementById('cfgDsDb').value = ds.databaseName || '';
+    document.getElementById('cfgDsUser').value = ds.username || '';
+    document.getElementById('cfgDsPass').value = ds.password || '';
+    document.getElementById('cfgDsMsg').textContent = '';
+    document.getElementById('cfgDsModal').style.display = 'flex';
+  });
+}
+
+function cfgDsSave() {
+  var id = document.getElementById('cfgDsId').value;
+  var ds = {
+    name: document.getElementById('cfgDsName').value,
+    type: document.getElementById('cfgDsType').value,
+    host: document.getElementById('cfgDsHost').value,
+    port: parseInt(document.getElementById('cfgDsPort').value) || 3306,
+    databaseName: document.getElementById('cfgDsDb').value,
+    username: document.getElementById('cfgDsUser').value,
+    password: document.getElementById('cfgDsPass').value
   };
-  // 密码是占位符时不传
-  if (body.password === '******') body.password = '';
-
-  fetch('/api/system/config/test-hive', {
+  if (!ds.name) { alert('请填写数据源名称'); return; }
+  if (!ds.host) { alert('请填写主机地址'); return; }
+  if (id) ds.id = parseInt(id);
+  fetch('/api/datasource/save', {
     method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(body)
-  }).then(function(r) { return r.json(); }).then(function(res) {
-    result.style.display = '';
-    if (res.code === 0) {
-      result.style.color = '#52c41a';
-      result.textContent = '✓ ' + res.data;
-    } else {
-      result.style.color = 'var(--error)';
-      result.textContent = '✗ ' + res.msg;
-    }
-  }).catch(function(e) {
-    result.style.display = '';
-    result.style.color = 'var(--error)';
-    result.textContent = '✗ 请求失败: ' + e.message;
-  });
-}
-
-function testHdfsConnection() {
-  var result = document.getElementById('hiveTestResult');
-  result.style.display = '';
-  result.style.color = 'var(--text-muted)';
-  result.textContent = 'HDFS 连接中...';
-
-  var body = { defaultFs: document.getElementById('cfgHdfsFs').value || 'hdfs://localhost:8020' };
-
-  fetch('/api/system/config/test-hdfs', {
-    method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(body)
-  }).then(function(r) { return r.json(); }).then(function(res) {
-    result.style.display = '';
-    if (res.code === 0) {
-      result.style.color = '#52c41a';
-      result.textContent = '✓ ' + res.data;
-    } else {
-      result.style.color = 'var(--error)';
-      result.textContent = '✗ ' + res.msg;
-    }
-  }).catch(function(e) {
-    result.style.display = '';
-    result.style.color = 'var(--error)';
-    result.textContent = '✗ 请求失败: ' + e.message;
-  });
-}
-
-function saveDatasourceConfig() {
-  var host = document.getElementById('cfgHiveHost').value;
-  var port = document.getElementById('cfgHivePort').value || '10800';
-  var auth = document.getElementById('cfgHiveAuth').value;
-  var db = document.getElementById('cfgHiveDb').value || 'default';
-  var user = document.getElementById('cfgHiveUser').value;
-  var pass = document.getElementById('cfgHivePass').value;
-
-  var url = '';
-  if (host) {
-    url = 'jdbc:hive2://' + host + ':' + port + '/' + db;
-    if (auth === 'noSasl') url += ';auth=noSasl';
-  }
-
-  var configs = {
-    'hive.url': url,
-    'hive.username': user,
-    'hive.password': pass,
-    'hdfs.default-fs': document.getElementById('cfgHdfsFs').value,
-    'hdfs.warehouse': document.getElementById('cfgHdfsWarehouse').value
-  };
-
-  fetch('/api/system/config', {
-    method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(configs)
+    body: JSON.stringify(ds)
   }).then(function(r) { return r.json(); }).then(function(res) {
     if (res.code === 0) {
-      showToast('配置已保存，Hive 连接已刷新', 'success');
-      loadDatasourceConfig(); // 刷新状态
+      document.getElementById('cfgDsModal').style.display = 'none';
+      showToast('数据源保存成功', 'success');
+      loadDatasourceConfig();
     } else {
       showToast('保存失败: ' + res.msg, 'error');
     }
   });
+}
+
+function cfgDsTest() {
+  var ds = {
+    type: document.getElementById('cfgDsType').value,
+    host: document.getElementById('cfgDsHost').value,
+    port: parseInt(document.getElementById('cfgDsPort').value) || 3306,
+    databaseName: document.getElementById('cfgDsDb').value,
+    username: document.getElementById('cfgDsUser').value,
+    password: document.getElementById('cfgDsPass').value
+  };
+  var id = document.getElementById('cfgDsId').value;
+  if (id) ds.id = parseInt(id);
+  var msg = document.getElementById('cfgDsMsg');
+  msg.style.color = 'var(--text-muted)';
+  msg.textContent = '连接中...';
+  fetch('/api/datasource/test', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(ds)
+  }).then(function(r) { return r.json(); }).then(function(res) {
+    if (res.code === 0) { msg.style.color = '#52c41a'; msg.textContent = '✓ ' + res.data; }
+    else { msg.style.color = 'var(--error)'; msg.textContent = '✗ ' + res.msg; }
+  });
+}
+
+function cfgDsTestOne(id) {
+  fetch('/api/datasource/test', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ id: id })
+  }).then(function(r) { return r.json(); }).then(function(res) {
+    if (res.code === 0) showToast('连接成功', 'success');
+    else showToast('连接失败: ' + res.msg, 'error');
+  });
+}
+
+function cfgDsDelete(id) {
+  if (!confirm('确定删除该数据源？')) return;
+  fetch('/api/datasource/' + id, { method: 'DELETE' })
+    .then(function(r) { return r.json(); }).then(function(res) {
+      if (res.code === 0) { showToast('删除成功', 'success'); loadDatasourceConfig(); }
+      else showToast('删除失败: ' + res.msg, 'error');
+    });
 }
 
 // ===== 系统配置：环境配置 =====
@@ -15359,10 +15729,9 @@ function openAiConfig() {
       + '</select></div>'
       + '<div>'
       + '<label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:4px;">API Key</label>'
-      + '<div style="border:1px dashed var(--border);border-radius:var(--radius);padding:8px 12px;font-size:13px;color:var(--text-muted);background:var(--bg-hover);line-height:1.6;">'
-      + '请在 <code style="color:var(--text-regular);">ai-service/.env</code> 中配置<br>'
-      + '<span style="font-size:11px;">设置 <code>QWEN_API_KEY=你的密钥</code> 后重启服务生效；此处不再存储密钥</span>'
-      + '</div></div>'
+      + '<input id="aiCfgApiKey" type="password" class="prop-input" style="width:100%;" placeholder="' + (cfg.apiKeyConfigured === 'true' ? '已配置，留空则不修改' : '请输入 API Key') + '" autocomplete="new-password">'
+      + (cfg.apiKeyConfigured === 'true' ? '<div style="font-size:11px;color:var(--text-muted);margin-top:3px;">当前已配置 API Key，若需更新请重新输入</div>' : '')
+      + '</div>'
       + '<div>'
       + '<label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:4px;">Base URL</label>'
       + '<input id="aiCfgBaseUrl" class="prop-input" style="width:100%;" placeholder="https://api.anthropic.com" value="' + escapeHtml(cfg.baseUrl || '') + '"></div>'
@@ -15403,11 +15772,12 @@ function onAiProviderChange() {
 }
 
 function saveAiConfig() {
-  // apiKey 不再由页面提交：统一在 ai-service/.env 中配置
+  var apiKeyInput = document.getElementById('aiCfgApiKey');
   var payload = {
     provider: document.getElementById('aiCfgProvider').value,
     baseUrl: document.getElementById('aiCfgBaseUrl').value,
-    model: document.getElementById('aiCfgModel').value
+    model: document.getElementById('aiCfgModel').value,
+    apiKey: apiKeyInput ? apiKeyInput.value : ''
   };
   apiPost('/api/ai/config', payload).then(function(res) {
     if (res.code === 0) {
@@ -15911,6 +16281,269 @@ function closeAiScriptNameModal() {
   }
 
   // WebSocket 连接由 CDN 脚本加载完成后自动触发，此处不重复调用
+})();
+</script>
+
+<script>
+// ========== AI BI 智能图表 ==========
+(function(){
+  var chartInstance = null;
+  var currentChartOption = null;
+  var currentSQL = '';
+  var currentChartType = 'bar';
+  var currentSessionId = '';
+  var resizeHandler = null;
+
+  function loadECharts(cb) { cb(); }
+
+  window.biAiSubmit = function() {
+    var inp = document.getElementById('biaiInput');
+    var msg = inp.value.trim();
+    if (!msg) return;
+    inp.value = '';
+    inp.disabled = true;
+    document.getElementById('biaiSubmitBtn').disabled = true;
+    addMsg('user', msg);
+    addMsg('ai', '⏳ 思考中…', 'thinking');
+    document.getElementById('biaiLoading').style.display = 'flex';
+    document.getElementById('biaiActions').style.display = 'none';
+
+    fetch('/api/ai/bi-chart', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({message: msg, sessionId: currentSessionId})
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      document.getElementById('biaiLoading').style.display = 'none';
+      inp.disabled = false;
+      document.getElementById('biaiSubmitBtn').disabled = false;
+      removeMsg('thinking');
+
+      if (res.code !== 0 || !res.data) {
+        showError(res.msg || '请求失败');
+        return;
+      }
+      var d = res.data;
+      // 保存 sessionId 用于多轮对话
+      if (d.sessionId) currentSessionId = d.sessionId;
+
+      var type = d.type || 'chat';
+
+      // 左侧聊天区：始终显示内容
+      if (type === 'chart') {
+        var chartReply = (d.explanation || '') + '\n' +
+          '<div class="biai-sql-block" onclick="biAiCopySQL()" title="点击复制SQL">' +
+          escHtml(d.sql || '（无SQL）') + '</div>';
+        if (d.duration != null) chartReply += '<span class="meta">耗时 ' + d.duration + 'ms</span>';
+        if (d.queryDuration != null) chartReply += '<span class="meta">查询 ' + d.queryDuration + 'ms</span>';
+        if (d.hint) chartReply += '<span class="meta hint">' + escHtml(d.hint) + '</span>';
+        addMsg('ai', chartReply);
+      } else if (type === 'report') {
+        var reportHtml = '<div class="biai-report">' + simpleMarkdown(d.content || '') + '</div>';
+        if (d.duration != null) reportHtml += '<span class="meta">耗时 ' + d.duration + 'ms</span>';
+        addMsg('ai', reportHtml);
+      } else {
+        var chatReply = escHtml(d.reply || d.error || '（无回复）');
+        if (d.duration != null) chatReply += '<span class="meta">耗时 ' + d.duration + 'ms</span>';
+        addMsg('ai', chatReply);
+      }
+
+      // 右侧面板：按类型渲染
+      renderRightContent(type, d);
+    })
+    .catch(function(e){
+      document.getElementById('biaiLoading').style.display = 'none';
+      inp.disabled = false;
+      document.getElementById('biaiSubmitBtn').disabled = false;
+      removeMsg('thinking');
+      showError('网络错误: ' + e.message);
+    });
+  };
+
+  window.biAiSwitchChart = function(type) {
+    if (!currentChartOption) return;
+    currentChartType = type;
+    updateChartTypeButtons();
+    var opt = JSON.parse(JSON.stringify(currentChartOption));
+    var series = opt.series;
+    if (series && Array.isArray(series) && series.length > 0) {
+      series[0].type = type;
+      if (type === 'line') series[0].smooth = true;
+      else delete series[0].smooth;
+      if (type === 'pie') {
+        delete opt.xAxis; delete opt.yAxis;
+        opt.legend = { type: 'scroll', bottom: 10 };
+        opt.tooltip = { trigger: 'item', formatter: '{b}: {c} ({d}%)' };
+        opt.series[0].radius = '60%';
+        var pieData = [];
+        var xData = (opt.xAxis && opt.xAxis.data) || [];
+        for (var i = 0; i < xData.length; i++) {
+          pieData.push({ name: xData[i], value: series[0].data[i] });
+        }
+        opt.series[0].data = pieData;
+      } else {
+        opt.tooltip = { trigger: 'axis' };
+      }
+    }
+    renderChart(opt);
+  };
+
+  window.biAiCopySQL = function() {
+    if (!currentSQL) return;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(currentSQL).then(function(){
+        showToast('SQL 已复制');
+      });
+    } else {
+      var ta = document.createElement('textarea');
+      ta.value = currentSQL; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+      showToast('SQL 已复制');
+    }
+  };
+
+  function renderRightContent(type, d) {
+    var placeholder = document.getElementById('biaiRightPlaceholder');
+    var content = document.getElementById('biaiRightContent');
+    var chartDom = document.getElementById('biaiEcharts');
+    var actions = document.getElementById('biaiActions');
+
+    if (!placeholder || !content || !chartDom || !actions) return;
+
+    // 重置状态
+    placeholder.style.display = 'none';
+    content.style.display = 'none';
+    chartDom.style.display = 'none';
+    actions.style.display = 'none';
+    if (chartInstance) { chartInstance.dispose(); chartInstance = null; }
+
+    if (type === 'chart' && d.chartOption) {
+      currentChartOption = d.chartOption;
+      currentSQL = d.sql || '';
+      currentChartType = d.chartType || 'bar';
+      chartDom.style.display = 'block';
+      actions.style.display = 'flex';
+      updateChartTypeButtons();
+      // 渲染图表
+      if (chartInstance) chartInstance.dispose();
+      chartInstance = window.echarts.init(chartDom);
+      chartInstance.setOption(d.chartOption, true);
+      chartInstance.resize();
+      resizeHandler = function(){ chartInstance && chartInstance.resize(); };
+      window.addEventListener('resize', resizeHandler);
+    } else if (type === 'report') {
+      currentChartOption = null;
+      content.style.display = 'block';
+      content.innerHTML = '<div class="biai-report">' + simpleMarkdown(d.content || '') + '</div>';
+    } else {
+      // chat / error
+      currentChartOption = null;
+      content.style.display = 'block';
+      var replyText = d.reply || d.error || '（无回复）';
+      if (d.duration != null) replyText += '\n（耗时 ' + d.duration + 'ms）';
+      content.innerHTML = '<div style="font-size:14px;line-height:1.7;color:#333;white-space:pre-wrap;">' + escHtml(replyText) + '</div>';
+    }
+  }
+
+  function renderChart(option) {
+    renderRightContent('chart', { chartOption: option, chartType: currentChartType, sql: currentSQL, explanation: '' });
+  }
+
+  function updateChartTypeButtons() {
+    ['bar','line','pie','scatter'].forEach(function(t){
+      var btn = document.getElementById('biaiBtn' + t.charAt(0).toUpperCase() + t.slice(1));
+      if (btn) {
+        btn.className = t === currentChartType ? 'active' : '';
+      }
+    });
+  }
+
+  function addMsg(role, text, id) {
+    var el = document.createElement('div');
+    el.className = 'biai-msg ' + role;
+    if (id) el.id = 'biaiMsg-' + id;
+    el.innerHTML = '<div class="bubble">' + text + '</div>';
+    document.getElementById('biaiMsgs').appendChild(el);
+    document.getElementById('biaiMsgs').scrollTop = document.getElementById('biaiMsgs').scrollHeight;
+  }
+
+  function removeMsg(id) {
+    var el = document.getElementById('biaiMsg-' + id);
+    if (el) el.remove();
+  }
+
+  function showError(msg) {
+    addMsg('ai', '❌ ' + escHtml(msg));
+  }
+
+  function showToast(text) {
+    var t = document.createElement('div');
+    t.textContent = text;
+    t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:8px 20px;border-radius:20px;font-size:14px;z-index:99999;opacity:0;transition:opacity .3s;';
+    document.body.appendChild(t);
+    requestAnimationFrame(function(){ t.style.opacity = '1'; });
+    setTimeout(function(){ t.style.opacity = '0'; setTimeout(function(){ t.remove(); }, 300); }, 2000);
+  }
+
+  function escHtml(s) {
+    return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function simpleMarkdown(md) {
+    if (!md) return '';
+    var h = md;
+    // 1. 代码块 (```...```) 必须最先处理，防止内部被其他规则破坏
+    var codeBlocks = [];
+    h = h.replace(/```(\w*)\n([\s\S]*?)```/g, function(m, lang, code) {
+      var idx = codeBlocks.length;
+      codeBlocks.push('<pre class="biai-code"><code>' + escHtml(code) + '</code></pre>');
+      return '%%CODEBLOCK' + idx + '%%';
+    });
+    // 行内代码 `...`
+    h = h.replace(/`([^`]+)`/g, function(m, c) { return '<code>' + escHtml(c) + '</code>'; });
+    // 2. 标题
+    h = h.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
+    h = h.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+    h = h.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+    h = h.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+    // 3. 分割线
+    h = h.replace(/^---+\s*$/gm, '<hr>');
+    // 4. 粗体和斜体
+    h = h.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+    h = h.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    h = h.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    // 5. 表格
+    h = h.replace(/^\|(.+)\|$/gm, function(m, row) {
+      var cells = row.split('|').map(function(c){ return c.trim(); });
+      return '<tr><td>' + cells.join('</td><td>') + '</td></tr>';
+    });
+    h = h.replace(/<tr><td>[- ]+<\/td><\/tr>/g, ''); // 移除表头分隔行
+    h = h.replace(/(<tr>.*?<\/tr>)+/g, function(m) {
+      // 第一行是表头
+      var rows = m.match(/<tr>.*?<\/tr>/g);
+      if (!rows || rows.length === 0) return m;
+      var thead = rows[0].replace(/<td>/g, '<th>').replace(/<\/td>/g, '</th>');
+      var tbody = '';
+      for (var i = 1; i < rows.length; i++) tbody += rows[i];
+      return '<table><thead>' + thead + '</thead><tbody>' + tbody + '</tbody></table>';
+    });
+    // 6. 无序列表
+    h = h.replace(/^[\-\*] (.+)$/gm, '<li>$1</li>');
+    // 7. 有序列表
+    h = h.replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>');
+    // 8. 引用
+    h = h.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+    // 9. 段落和换行
+    h = h.replace(/\n\n/g, '</p><p>');
+    h = h.replace(/\n/g, '<br>');
+    h = '<p>' + h + '</p>';
+    // 10. 还原代码块
+    for (var i = 0; i < codeBlocks.length; i++) {
+      h = h.replace('%%CODEBLOCK' + i + '%%', codeBlocks[i]);
+    }
+    return h;
+  }
 })();
 </script>
 </body>

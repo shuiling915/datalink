@@ -1,5 +1,5 @@
 -- 同步任务增加 DolphinScheduler 调度字段
-ALTER TABLE dn_sync_task
+ALTER TABLE dl_sync_task
   ADD COLUMN ds_project_code  BIGINT       DEFAULT NULL COMMENT 'DS项目code',
   ADD COLUMN ds_workflow_code BIGINT       DEFAULT NULL COMMENT 'DS工作流code',
   ADD COLUMN ds_task_code     BIGINT       DEFAULT NULL COMMENT 'DS任务code',

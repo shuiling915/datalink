@@ -1,5 +1,5 @@
 -- 表元数据注释表
-CREATE TABLE IF NOT EXISTS `dn_table_meta` (
+CREATE TABLE IF NOT EXISTS `dl_table_meta` (
   `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
   `datasource_id` BIGINT NOT NULL COMMENT '数据源ID',
   `database_name` VARCHAR(100) NOT NULL COMMENT '数据库名',
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS `dn_table_meta` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='表元数据';
 
 -- 字段注释表
-CREATE TABLE IF NOT EXISTS `dn_column_meta` (
+CREATE TABLE IF NOT EXISTS `dl_column_meta` (
   `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
   `table_meta_id` BIGINT NOT NULL COMMENT '表元数据ID',
   `column_name` VARCHAR(200) NOT NULL COMMENT '字段名',

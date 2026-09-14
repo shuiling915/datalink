@@ -1,4 +1,4 @@
-# DataNote 数据开发平台 — 系统架构设计
+# DataLink 数据开发平台 — 系统架构设计
 
 > 设计日期：2026-03-25
 > 运行环境：MacBook M5 / macOS 26.3.1 / 16GB 内存
@@ -69,10 +69,10 @@
 ## 四、项目结构
 
 ```
-datanote/
+datalink/
 ├── pom.xml
-├── src/main/java/com/datanote/
-│   ├── DataNoteApplication.java              ← 启动类
+├── src/main/java/com/datalink/
+│   ├── DataLinkApplication.java              ← 启动类
 │   │
 │   ├── config/
 │   │   ├── DataSourceConfig.java             ← MySQL 数据源
@@ -196,7 +196,7 @@ datanote/
 
 ---
 
-## 六、数据库表设计（MySQL datanote 库，共 12 张表）
+## 六、数据库表设计（MySQL datalink 库，共 12 张表）
 
 ### 系统管理（3 张）
 
@@ -410,7 +410,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/datanote?useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://127.0.0.1:3306/datalink?useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -515,12 +515,12 @@ java -server -Xms1g -Xmx1g \
 
 ```bash
 # 开发阶段
-cd datanote
+cd datalink
 mvn spring-boot:run
 
 # 打包发布
 mvn clean package -DskipTests
-java -jar target/datanote-1.0.0.jar
+java -jar target/datalink-1.0.0.jar
 
 # 访问地址
 # 平台首页：http://localhost:8099/index.html

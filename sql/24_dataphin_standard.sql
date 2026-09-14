@@ -5,7 +5,7 @@
 -- ============================================================
 
 -- 数据域（Data Domain）
-CREATE TABLE IF NOT EXISTS dn_data_domain (
+CREATE TABLE IF NOT EXISTS dl_data_domain (
     id              BIGINT AUTO_INCREMENT PRIMARY KEY,
     domain_code     VARCHAR(100) NOT NULL COMMENT '数据域编码（唯一）',
     domain_name     VARCHAR(200) NOT NULL COMMENT '数据域名称',
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS dn_data_domain (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='数据域';
 
 -- 业务过程（Business Process）
-CREATE TABLE IF NOT EXISTS dn_business_process (
+CREATE TABLE IF NOT EXISTS dl_business_process (
     id              BIGINT AUTO_INCREMENT PRIMARY KEY,
     domain_id       BIGINT NOT NULL COMMENT '所属数据域ID',
     process_code    VARCHAR(100) NOT NULL COMMENT '业务过程编码',
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS dn_business_process (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='业务过程';
 
 -- 词根（Word Root）
-CREATE TABLE IF NOT EXISTS dn_word_root (
+CREATE TABLE IF NOT EXISTS dl_word_root (
     id              BIGINT AUTO_INCREMENT PRIMARY KEY,
     word_code       VARCHAR(100) NOT NULL COMMENT '词根编码',
     word_name       VARCHAR(200) NOT NULL COMMENT '词根名称',
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS dn_word_root (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='词根';
 
 -- 修饰词（Modifier）
-CREATE TABLE IF NOT EXISTS dn_modifier (
+CREATE TABLE IF NOT EXISTS dl_modifier (
     id              BIGINT AUTO_INCREMENT PRIMARY KEY,
     modifier_code   VARCHAR(100) NOT NULL COMMENT '修饰词编码',
     modifier_name   VARCHAR(200) NOT NULL COMMENT '修饰词名称',
@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS dn_modifier (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='修饰词';
 
 -- 时间周期（Time Period）
-CREATE TABLE IF NOT EXISTS dn_time_period (
+CREATE TABLE IF NOT EXISTS dl_time_period (
     id              BIGINT AUTO_INCREMENT PRIMARY KEY,
     period_code     VARCHAR(100) NOT NULL COMMENT '周期编码',
     period_name     VARCHAR(200) NOT NULL COMMENT '周期名称',

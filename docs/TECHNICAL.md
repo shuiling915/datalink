@@ -1,4 +1,4 @@
-# DataNote 技术文档
+# DataLink 技术文档
 
 ## 1. 系统架构
 
@@ -40,6 +40,11 @@
     │  │ SQL Gateway: 8083 │  │                  │               │
     │  │ TaskManager: 1-2  │  │                  │               │
     │  └──────────────────┘  └──────────────────┘               │
+    │  ┌──────────────────────┐                                  │
+    │  │ DataEase BI (Docker) │                                  │
+    │  │ 端口: 8100            │                                  │
+    │  │ MySQL 内部: 3308      │                                  │
+    │  └──────────────────────┘                                  │
     └──────────────────────────────────────────────────────────┘
 ```
 
@@ -47,16 +52,18 @@
 
 | 服务 | 端口 | 说明 |
 |------|------|------|
-| DataNote Spring Boot | 8099 | 主应用，包含所有 API 和主前端 |
+| DataLink Spring Boot | 8099 | 主应用，包含所有 API 和主前端 |
 | Vue 3 数据建模 | 27841 | Vite 开发服务器 (dev) 或静态文件 (prod) |
 | FastAPI 数据湖 | 27844 | 多模态数据湖 API 和 React 前端 |
-| MySQL | 3306 | Docker 容器 datanote-mysql |
-| HiveServer2 | 10000 | Docker 容器 datanote-hiveserver2 |
-| HDFS NameNode | 8020 | Docker 容器 datanote-namenode |
+| MySQL | 3306 | Docker 容器 datalink-mysql |
+| HiveServer2 | 10000 | Docker 容器 datalink-hiveserver2 |
+| HDFS NameNode | 8020 | Docker 容器 datalink-namenode |
 | Flink JobManager | 8081 | Docker 容器 flink-jobmanager |
 | Flink SQL Gateway | 8083 | Docker 容器 flink-sql-gateway |
 | AI RAG 服务 | 8001 | Python ai-service/rag_admin_service.py |
 | 需求管理 Agent | 8000 | Python ai-service/requirement_analyst.py |
+| DataEase BI | 8100 | DataEase BI 看板 (Docker) |
+| DataEase MySQL | 3308 | BI 内部数据库 (Docker) |
 
 ---
 
@@ -86,7 +93,7 @@
 
 #### FlinkService
 
-核心执行逻辑位于 [FlinkService.java](file:///Users/nayy/JavaProjects/datanote/src/main/java/com/datanote/service/FlinkService.java)：
+核心执行逻辑位于 [FlinkService.java](file:///Users/nayy/JavaProjects/datalink/src/main/java/com/datalink/service/FlinkService.java)：
 
 - 通过 Flink SQL Gateway REST API (`http://localhost:8083`) 执行 SQL
 - 流程：创建 Session → 提交 SQL → 轮询状态 → 获取结果
@@ -123,7 +130,7 @@ CREATE TABLE dn_realtime_task (
 
 ### 2.2 数据开发模块
 
-核心控制器 [DataDevelopmentController.java](file:///Users/nayy/JavaProjects/datanote/src/main/java/com/datanote/controller/DataDevelopmentController.java)：
+核心控制器 [DataDevelopmentController.java](file:///Users/nayy/JavaProjects/datalink/src/main/java/com/datalink/controller/DataDevelopmentController.java)：
 
 - `/api/scripts/*` — 脚本 CRUD、文件夹管理、版本历史、发布审批
 - `/api/datasync/*` — 同步任务管理（MySQL → Hive）
@@ -143,10 +150,10 @@ CREATE TABLE dn_realtime_task (
 
 | 组件 | 文件 | 说明 |
 |------|------|------|
-| `TaskSchedulerService` | [TaskSchedulerService.java](file:///Users/nayy/JavaProjects/datanote/src/main/java/com/datanote/service/TaskSchedulerService.java) | 核心调度引擎，Cron 触发、DAG 拓扑排序 |
-| `TaskExecutionService` | [TaskExecutionService.java](file:///Users/nayy/JavaProjects/datanote/src/main/java/com/datanote/service/TaskExecutionService.java) | 任务执行、重试逻辑 |
-| `TaskDependencyService` | [TaskDependencyService.java](file:///Users/nayy/JavaProjects/datanote/src/main/java/com/datanote/service/TaskDependencyService.java) | DAG 依赖计算、下游暂停 |
-| `BackfillService` | [BackfillService.java](file:///Users/nayy/JavaProjects/datanote/src/main/java/com/datanote/service/BackfillService.java) | 补数回溯 |
+| `TaskSchedulerService` | [TaskSchedulerService.java](file:///Users/nayy/JavaProjects/datalink/src/main/java/com/datalink/service/TaskSchedulerService.java) | 核心调度引擎，Cron 触发、DAG 拓扑排序 |
+| `TaskExecutionService` | [TaskExecutionService.java](file:///Users/nayy/JavaProjects/datalink/src/main/java/com/datalink/service/TaskExecutionService.java) | 任务执行、重试逻辑 |
+| `TaskDependencyService` | [TaskDependencyService.java](file:///Users/nayy/JavaProjects/datalink/src/main/java/com/datalink/service/TaskDependencyService.java) | DAG 依赖计算、下游暂停 |
+| `BackfillService` | [BackfillService.java](file:///Users/nayy/JavaProjects/datalink/src/main/java/com/datalink/service/BackfillService.java) | 补数回溯 |
 
 #### 执行状态机
 
@@ -159,8 +166,8 @@ PENDING → RUNNING → SUCCESS
 
 ### 2.4 WebSocket 实时推送
 
-配置类：[WebSocketConfig.java](file:///Users/nayy/JavaProjects/datanote/src/main/java/com/datanote/config/WebSocketConfig.java)
-广播服务：[LogBroadcastService.java](file:///Users/nayy/JavaProjects/datanote/src/main/java/com/datanote/service/LogBroadcastService.java)
+配置类：[WebSocketConfig.java](file:///Users/nayy/JavaProjects/datalink/src/main/java/com/datalink/config/WebSocketConfig.java)
+广播服务：[LogBroadcastService.java](file:///Users/nayy/JavaProjects/datalink/src/main/java/com/datalink/service/LogBroadcastService.java)
 
 ```java
 // 日志广播
@@ -202,6 +209,38 @@ logBroadcastService.broadcast("realtime-result", "OK", taskId, taskName, summary
 S3_ENDPOINT_URL=           # 留空使用本地存储
 CORS_ALLOW_ORIGINS=http://localhost:8099
 BACKEND_RELOAD=false
+```
+
+### 2.6 BI 看板 (DataEase)
+
+#### 部署架构
+
+```
+bi-docker/
+├── docker-compose.yml    # MySQL 8.0 + DataEase v2.10.6
+├── setup-bi.sh           # 独立启动脚本
+└── (数据卷 de-*)          # Docker volumes (已被 gitignore)
+```
+
+#### 服务组成
+
+| 组件 | 容器名 | 端口 | 说明 |
+|------|--------|------|------|
+| DataEase | de-server | 8100 | BI 应用 (Spring Boot 3.3) |
+| MySQL | de-mysql | 3308 | BI 内部元数据库 |
+
+#### 默认凭证
+
+- 地址: `http://localhost:8100`
+- 账号: `admin`
+- 密码: `DataEase@123456`
+
+#### 集成方式
+
+DataEase 通过 iframe 嵌入到 workspace.html 的 `#viewBI` 页面视图中。
+用户可在 DataEase 中连接 MySQL/Hive 数据源，创建仪表板后通过公共链接分享，
+实现与 DataLink 的统一展示。
+
 ```
 
 ---
@@ -254,12 +293,12 @@ var ROUTES = {
 ### 4.1 Docker 容器
 
 ```
-datanote-mysql          → MySQL 8.0 (3306)
-datanote-namenode       → HDFS NameNode (8020)
-datanote-datanode       → HDFS DataNode
-datanote-metastore      → Hive Metastore (9083)
-datanote-hiveserver2    → HiveServer2 (10000)
-datanote-datax          → DataX 执行容器
+datalink-mysql          → MySQL 8.0 (3306)
+datalink-namenode       → HDFS NameNode (8020)
+datalink-datanode       → HDFS DataNode
+datalink-metastore      → Hive Metastore (9083)
+datalink-hiveserver2    → HiveServer2 (10000)
+datalink-datax          → DataX 执行容器
 
 flink-jobmanager        → Flink JobManager (8081)
 flink-taskmanager       → Flink TaskManager
@@ -270,11 +309,11 @@ flink-sql-gateway       → Flink SQL Gateway (8083)
 
 | 脚本 | 说明 |
 |------|------|
-| `dn-up.sh` | 一键启动所有服务（MySQL → Hive → DataX → 数据湖 → DataNote） |
+| `dn-up.sh` | 一键启动所有服务（MySQL → Hive → DataX → 数据湖 → DataLink） |
 | `dn-down.sh` | 一键停止所有服务 |
 | `setup-hive.sh` | 初始化 Hadoop + Hive Docker 集群 |
 | `setup-datax.sh` | 初始化 DataX 容器 |
-| `setup-datanote.sh` | 编译并启动 DataNote |
+| `setup-datalink.sh` | 编译并启动 DataLink |
 
 ### 4.3 Flink Docker 配置
 
@@ -313,19 +352,19 @@ services:
 
 ```bash
 # 终端 1: 启动 Spring Boot
-cd datanote
+cd datalink
 mvn spring-boot:run
 
 # 终端 2: 启动 Vue 前端 (可选)
-cd datanote/frontend
+cd datalink/frontend
 npm run dev                    # http://localhost:27841
 
 # 终端 3: 启动数据湖 FastAPI (可选)
-cd datanote/multimodal-data-lake
+cd datalink/multimodal-data-lake
 python3 -m uvicorn backend.main:app --reload --port 27844
 
 # 终端 4: 启动 Flink (可选)
-cd datanote/flink-docker
+cd datalink/flink-docker
 docker-compose up -d
 ```
 
@@ -398,7 +437,7 @@ CREATE TABLE test_table (id INT, name STRING) WITH (
 
 | 问题 | 排查步骤 |
 |------|----------|
-| Spring Boot 启动失败 | 检查 MySQL 是否运行；确认 `datanote.conf` 配置 |
+| Spring Boot 启动失败 | 检查 MySQL 是否运行；确认 `datalink.conf` 配置 |
 | Flink SQL 执行超时 | 检查 SQL Gateway 是否健康；查看 `docker logs flink-sql-gateway` |
 | WebSocket 断连 | 浏览器控制台检查 STOMP 连接；确认 `CorsConfig` 配置 |
 | 数据湖 API 无响应 | 确认 Python 依赖已安装；检查 `.env` 配置 |

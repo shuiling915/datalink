@@ -1,5 +1,5 @@
 # ============================================================
-#  DataNote 配置文件（示例）
+#  DataLink 配置文件（示例）
 #  首次部署请复制本文件为 application.yml 并修改以下配置
 # ============================================================
 
@@ -7,12 +7,12 @@ server:
   port: 8099
 
 # -------------------- MySQL 元数据库 --------------------
-# DataNote 自身的元数据存储，需提前创建数据库并执行 sql/ 目录下的建表脚本
+# DataLink 自身的元数据存储，需提前创建数据库并执行 sql/ 目录下的建表脚本
 spring:
   main:
     allow-circular-references: true
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/datanote?useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://127.0.0.1:3306/datalink?useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: your_mysql_password
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -53,11 +53,11 @@ dolphin:
   project-code: 0
   tenant-code: default
 
-# -------------------- DataNote 配置 --------------------
+# -------------------- DataLink 配置 --------------------
 # crypto.key: 用于数据源密码加密的密钥（建议 16 位随机字符串）
 # auth: 登录认证配置
 # ai: AI 助手配置（Claude API）
-datanote:
+datalink:
   crypto:
     key: your_crypto_key_here
   auth:

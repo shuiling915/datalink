@@ -4,8 +4,8 @@ Hive 元数据查询工具（Function Calling / @tool）
 给 Agent 用的确定性元数据工具：查询 Hive 表名、字段名、类型、注释和分区字段。
 
 注意：
-  - 这里读取的是 Hive Metastore（datanote-mysql.hive_metastore），不是 MySQL 业务库。
-  - 若数据地图维护了 dn_table_meta / dn_column_meta 的业务注释，会优先叠加使用。
+  - 这里读取的是 Hive Metastore（datalink-mysql.hive_metastore），不是 MySQL 业务库。
+  - 若数据地图维护了 dl_table_meta / dl_column_meta 的业务注释，会优先叠加使用。
 """
 import os
 import subprocess
@@ -24,7 +24,7 @@ DB_CONF = dict(
 )
 
 HIVE_METASTORE_DB = os.getenv("HIVE_METASTORE_DB", "hive_metastore")
-DATANOTE_DB = os.getenv("DATANOTE_DB", "datanote")
+DATALINK_DB = os.getenv("DATALINK_DB", "datalink")
 SYSTEM_DBS = {"default", "information_schema", "sys"}
 
 
@@ -109,7 +109,7 @@ def list_tables(database: str) -> str:
             GROUP BY CD_ID
         ) cc
           ON cc.CD_ID = s.CD_ID
-        LEFT JOIN {DATANOTE_DB}.dn_table_meta tm
+        LEFT JOIN {DATALINK_DB}.dl_table_meta tm
           ON tm.database_name = d.NAME
          AND tm.table_name = t.TBL_NAME
         WHERE d.NAME = %s
@@ -153,10 +153,10 @@ def get_table_schema(database: str, table: str) -> str:
           ON s.SD_ID = t.SD_ID
         LEFT JOIN {HIVE_METASTORE_DB}.COLUMNS_V2 c
           ON c.CD_ID = s.CD_ID
-        LEFT JOIN {DATANOTE_DB}.dn_table_meta tm
+        LEFT JOIN {DATALINK_DB}.dl_table_meta tm
           ON tm.database_name = d.NAME
          AND tm.table_name = t.TBL_NAME
-        LEFT JOIN {DATANOTE_DB}.dn_column_meta cm
+        LEFT JOIN {DATALINK_DB}.dl_column_meta cm
           ON cm.table_meta_id = tm.id
          AND cm.column_name = c.COLUMN_NAME
         WHERE d.NAME = %s
@@ -233,7 +233,7 @@ def search_tables(keyword: str) -> str:
             GROUP BY CD_ID
         ) cc
           ON cc.CD_ID = s.CD_ID
-        LEFT JOIN {DATANOTE_DB}.dn_table_meta tm
+        LEFT JOIN {DATALINK_DB}.dl_table_meta tm
           ON tm.database_name = d.NAME
          AND tm.table_name = t.TBL_NAME
         WHERE d.NAME NOT IN ('default', 'information_schema', 'sys')
@@ -272,7 +272,7 @@ def execute_sql(sql: str) -> str:
         return f"拒绝执行：{e}"
 
     cmd = [
-        "docker", "exec", "datanote-hiveserver2", "beeline",
+        "docker", "exec", "datalink-hiveserver2", "beeline",
         "-u", os.getenv("HIVE_BEELINE_URL", "jdbc:hive2://localhost:10000/default;auth=noSasl"),
         "--silent=true",
         "--showHeader=true",

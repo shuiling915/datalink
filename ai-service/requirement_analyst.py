@@ -1,5 +1,5 @@
 """
-需求分析 Agent —— datanote 需求管理的「需求分析师」角色
+需求分析 Agent —— datalink 需求管理的「需求分析师」角色
 ================================================================
 它是什么：
   多 Agent 设计里的第一个专职 Agent。人设 = 资深数仓需求分析师。
@@ -27,13 +27,13 @@ from langchain_core.tools import tool
 from langchain_community.embeddings import DashScopeEmbeddings
 from langchain_redis import RedisConfig, RedisVectorStore
 
-from datanote_config import get_ai_config, get_prompt   # 读 datanote「AI配置」和提示词
+from datalink_config import get_ai_config, get_prompt   # 读 datalink「AI配置」和提示词
 from hive_metadata_tool import HIVE_METADATA_TOOLS     # 查 Hive 库/表/字段/注释 的工具
 
 REDIS_URL = "redis://localhost:6379"
 RAG_INDEX = "rag_knowledge"                     # 和知识库管理页同一个向量索引
 
-# ============ 1. 模型：用 datanote 网页里配置的默认模型 ============
+# ============ 1. 模型：用 datalink 网页里配置的默认模型 ============
 _cfg = get_ai_config()                          # {api_key, base_url, model}
 # 用字典展开传参：凭据从配置里取，调用处不写成字面量赋值
 _chat_args = {

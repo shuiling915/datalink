@@ -39,7 +39,7 @@ DASHSCOPE_KEY = (os.getenv("DASHSCOPE_API_KEY") or os.getenv("QWEN_API_KEY")
 # ---------- 启动时构建一次 ----------
 from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(title="RAG 向量库管理系统")
-# 允许 datanote 页面(8099)跨域调用本服务
+# 允许 datalink 页面(8099)跨域调用本服务
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 # 普通 redis：存"导入批次记录"（标题、时间、原始文本）
@@ -49,9 +49,9 @@ rdb = redis.Redis.from_url(REDIS_URL, decode_responses=True)
 embeddings = DashScopeEmbeddings(model="text-embedding-v3", dashscope_api_key=DASHSCOPE_KEY)
 vector_store = RedisVectorStore(embeddings, config=RedisConfig(index_name=INDEX_NAME, redis_url=REDIS_URL))
 
-# 聊天模型：用于「更新时 AI 生成变更总结」（用 datanote 网页里配置的默认模型）
+# 聊天模型：用于「更新时 AI 生成变更总结」（用 datalink 网页里配置的默认模型）
 try:
-    from datanote_config import get_ai_config
+    from datalink_config import get_ai_config
     from langchain.chat_models import init_chat_model
     _cfg = get_ai_config()
     _chat_args = {

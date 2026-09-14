@@ -1,5 +1,5 @@
 -- 数据质量规则表
-CREATE TABLE IF NOT EXISTS `dn_quality_rule` (
+CREATE TABLE IF NOT EXISTS `dl_quality_rule` (
   `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
   `rule_name` VARCHAR(200) NOT NULL COMMENT '规则名称',
   `rule_type` VARCHAR(50) NOT NULL COMMENT '规则类型: null_check/unique_check/value_range/regex_check/custom_sql',
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS `dn_quality_rule` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='数据质量规则';
 
 -- 数据质量检查执行记录表
-CREATE TABLE IF NOT EXISTS `dn_quality_run` (
+CREATE TABLE IF NOT EXISTS `dl_quality_run` (
   `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
   `rule_id` BIGINT NOT NULL COMMENT '规则ID',
   `run_status` VARCHAR(20) NOT NULL COMMENT '运行状态: success/failed/error',

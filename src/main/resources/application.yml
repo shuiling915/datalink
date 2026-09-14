@@ -1,20 +1,40 @@
 # ============================================================
-#  DataNote 配置文件
-#  开源部署时请根据实际环境修改以下配置
+#  DataLink 配置文件
+#  企业内部部署时请根据实际环境修改以下配置
+#  敏感项优先通过环境变量注入，不要直接写死在配置文件中
 # ============================================================
 
 server:
-  port: 8099
+  port: ${SERVER_PORT:8099}
 
 # -------------------- MySQL 元数据库 --------------------
 spring:
   main:
     allow-circular-references: true  # TaskSchedulerService <-> TaskExecutionService 循环依赖
   datasource:
-    url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3307}/datanote?useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://${DB_HOST:127.0.0.1}:${DB_PORT:3307}/datalink?useUnicode=true&characterEncoding=UTF-8&useSSL=${DB_USE_SSL:false}&allowPublicKeyRetrieval=true&serverTimezone=${DB_TIMEZONE:Asia/Shanghai}
     username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:root123}
+    password: ${DB_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:20}
+      minimum-idle: ${DB_POOL_MIN_IDLE:5}
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  # -------------------- 邮件告警（可选，不配置则邮件渠道不可用） --------------------
+  mail:
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:25}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    from: ${MAIL_FROM:datalink@company.com}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:true}
+          starttls:
+            enable: ${MAIL_STARTTLS_ENABLE:false}
 
 # -------------------- MyBatis-Plus --------------------
 mybatis-plus:
@@ -45,19 +65,23 @@ dolphin:
   project-code: ${DS_PROJECT_CODE:0}
   tenant-code: ${DS_TENANT_CODE:default}
 
-# -------------------- DataNote 配置 --------------------
-datanote:
+# -------------------- DataLink 配置 --------------------
+datalink:
   crypto:
-    key: datanote01234567
+    # 加密密钥：16/24/32 字节，生产环境必须通过环境变量注入
+    # 生成方法：LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32
+    key: ${CRYPTO_KEY:DatalinkAESKey16}
   auth:
-    username: ${DATANOTE_USERNAME:admin}
-    password: ${DATANOTE_PASSWORD:}
+    # 登录账号：企业部署时必须设置强密码，空密码表示放行所有请求（仅本地开发）
+    username: ${DATALINK_USERNAME:admin}
+    password: ${DATALINK_PASSWORD:}
   ai:
-    # API Key 只从环境变量读（由 setup-datanote.sh 从 ai-service/.env 注入），
+    # API Key 只从环境变量读（由 setup-datalink.sh 从 ai-service/.env 注入），
     # 不再存数据库、不再加密。与 Python 侧 ai-service 用同一份 .env，避免两处配置不一致。
     api-key: ${QWEN_API_KEY:${DASHSCOPE_API_KEY:${CLAUDE_API_KEY:}}}
-    model: ${CLAUDE_MODEL:claude-sonnet-4-6}
-    base-url: ${CLAUDE_BASE_URL:https://api.anthropic.com}
+    model: ${AI_MODEL:kimi-k3}
+    base-url: ${AI_BASE_URL:https://api.moonshot.cn}
+    provider: openai
 
 # -------------------- SpringDoc API 文档 --------------------
 springdoc:
@@ -67,3 +91,36 @@ springdoc:
     path: /swagger-ui.html
     tags-sorter: alpha
     operations-sorter: alpha
+  # 生产环境可通过 SPRINGDOC_API_DOCS_ENABLED=false 关闭接口文档
+  api-docs.enabled: ${SPRINGDOC_ENABLED:true}
+
+# -------------------- 日志配置 --------------------
+logging:
+  level:
+    root: ${LOG_LEVEL_ROOT:INFO}
+    com.datalink: ${LOG_LEVEL_DATALINK:INFO}
+  file:
+    name: ${LOG_FILE:./logs/datalink.log}
+  logback:
+    rollingpolicy:
+      max-file-size: ${LOG_MAX_FILE_SIZE:100MB}
+      max-history: ${LOG_MAX_HISTORY:30}
+      total-size-cap: ${LOG_TOTAL_SIZE_CAP:3GB}
+
+# -------------------- Actuator 健康检查/监控 --------------------
+management:
+  endpoints:
+    web:
+      exposure:
+        # 只暴露健康检查端点，其他端点按需开启
+        include: ${ACTUATOR_ENDPOINTS:health}
+      base-path: /actuator
+  endpoint:
+    health:
+      # 显示详细健康信息（数据库、磁盘等）
+      show-details: ${ACTUATOR_HEALTH_DETAILS:when_authorized}
+  health:
+    db:
+      enabled: true
+    diskspace:
+      enabled: true

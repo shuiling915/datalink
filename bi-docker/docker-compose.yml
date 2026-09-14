@@ -1,0 +1,41 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: de-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: DataEase@123456
+      MYSQL_DATABASE: dataease
+    ports:
+      - "3308:3306"
+    volumes:
+      - de-mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  dataease:
+    image: registry.cn-qingdao.aliyuncs.com/dataease/dataease:v2.10.6
+    container_name: de-server
+    restart: always
+    ports:
+      - "8100:8100"
+    environment:
+      DE_MYSQL_HOST: mysql
+      DE_MYSQL_PORT: "3306"
+      DE_MYSQL_DB: dataease
+      DE_MYSQL_USER: root
+      DE_MYSQL_PASSWORD: DataEase@123456
+      DE_PORT: "8100"
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/dataease?autoReconnect=false&useUnicode=true&characterEncoding=UTF-8&characterSetResults=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: DataEase@123456
+    volumes:
+      - de-data:/opt/dataease/data
+    depends_on:
+      mysql:
+        condition: service_healthy
+volumes:
+  de-mysql-data:
+  de-data:

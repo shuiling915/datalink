@@ -1,8 +1,8 @@
 -- ============================================================
--- DataNote 完整初始化脚本 (init-all.sql)
+-- DataLink 完整初始化脚本 (init-all.sql)
 -- 生成时间: 2026-04-03
 -- 说明: 包含所有建表语句（无 ALTER TABLE），可直接用于全新部署
--- 顺序: 商城示例库 (01-07) → DataNote 系统表 → 示例数据
+-- 顺序: 商城示例库 (01-07) → DataLink 系统表 → 示例数据
 -- ============================================================
 SET NAMES utf8mb4;
 SET CHARACTER SET utf8mb4;
@@ -642,13 +642,13 @@ CREATE TABLE financial_sku_cost (
 
 
 -- ============================================================
--- DataNote 系统表
+-- DataLink 系统表
 -- ============================================================
-CREATE DATABASE IF NOT EXISTS datanote DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_general_ci;
-USE datanote;
+CREATE DATABASE IF NOT EXISTS datalink DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_general_ci;
+USE datalink;
 
 -- 数据源配置表
-CREATE TABLE IF NOT EXISTS dn_datasource (
+CREATE TABLE IF NOT EXISTS dl_datasource (
     id            BIGINT       NOT NULL AUTO_INCREMENT,
     name          VARCHAR(100) NOT NULL COMMENT '数据源名称',
     type          VARCHAR(20)  NOT NULL COMMENT 'MySQL/Hive/PostgreSQL/Oracle',
@@ -666,7 +666,7 @@ CREATE TABLE IF NOT EXISTS dn_datasource (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='数据源配置';
 
 -- 脚本目录
-CREATE TABLE IF NOT EXISTS dn_script_folder (
+CREATE TABLE IF NOT EXISTS dl_script_folder (
     id          BIGINT       NOT NULL AUTO_INCREMENT,
     folder_name VARCHAR(100) NOT NULL COMMENT '目录名称',
     parent_id   BIGINT       DEFAULT 0 COMMENT '父目录ID，0为根目录',
@@ -677,7 +677,7 @@ CREATE TABLE IF NOT EXISTS dn_script_folder (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='脚本目录';
 
 -- 脚本表（包含所有增量字段：DS集成、模型增强、库名、告警通道）
-CREATE TABLE IF NOT EXISTS dn_script (
+CREATE TABLE IF NOT EXISTS dl_script (
     id                BIGINT       NOT NULL AUTO_INCREMENT,
     folder_id         BIGINT       NOT NULL COMMENT '所属目录ID',
     script_name       VARCHAR(200) NOT NULL COMMENT '脚本名称',
@@ -713,7 +713,7 @@ CREATE TABLE IF NOT EXISTS dn_script (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='脚本表';
 
 -- 脚本历史版本表（包含 version_type）
-CREATE TABLE IF NOT EXISTS dn_script_version (
+CREATE TABLE IF NOT EXISTS dl_script_version (
     id            BIGINT   NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     script_id     BIGINT   NOT NULL COMMENT '脚本ID',
     version       INT      NOT NULL DEFAULT 1 COMMENT '版本号',
@@ -727,7 +727,7 @@ CREATE TABLE IF NOT EXISTS dn_script_version (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='脚本历史版本表';
 
 -- 同步任务表（包含所有 DS 集成字段和告警通道）
-CREATE TABLE IF NOT EXISTS dn_sync_task (
+CREATE TABLE IF NOT EXISTS dl_sync_task (
     id                BIGINT       NOT NULL AUTO_INCREMENT,
     task_name         VARCHAR(200) NOT NULL COMMENT '任务名称',
     source_ds_id      BIGINT       NOT NULL COMMENT '源数据源ID',
@@ -760,10 +760,10 @@ CREATE TABLE IF NOT EXISTS dn_sync_task (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='同步任务';
 
 -- 任务执行记录（统一存储所有类型任务的执行记录）
-CREATE TABLE IF NOT EXISTS dn_task_execution (
+CREATE TABLE IF NOT EXISTS dl_task_execution (
     id              BIGINT       NOT NULL AUTO_INCREMENT,
-    script_id       BIGINT       DEFAULT NULL COMMENT '关联 dn_script.id（SQL任务）',
-    sync_task_id    BIGINT       DEFAULT NULL COMMENT '关联 dn_sync_task.id（同步任务）',
+    script_id       BIGINT       DEFAULT NULL COMMENT '关联 dl_script.id（SQL任务）',
+    sync_task_id    BIGINT       DEFAULT NULL COMMENT '关联 dl_sync_task.id（同步任务）',
     task_type       VARCHAR(20)  NOT NULL COMMENT 'HiveSQL/Shell/DataSync',
     trigger_type    VARCHAR(20)  NOT NULL COMMENT 'manual手动 / schedule调度',
     ds_instance_id  BIGINT       DEFAULT NULL COMMENT 'DolphinScheduler 实例ID（调度触发时）',
@@ -785,7 +785,7 @@ CREATE TABLE IF NOT EXISTS dn_task_execution (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='任务执行记录';
 
 -- 基线管理表
-CREATE TABLE IF NOT EXISTS dn_baseline (
+CREATE TABLE IF NOT EXISTS dl_baseline (
     id            BIGINT AUTO_INCREMENT PRIMARY KEY,
     baseline_name VARCHAR(200) NOT NULL COMMENT '基线名称',
     description   VARCHAR(500) COMMENT '基线描述',
@@ -798,7 +798,7 @@ CREATE TABLE IF NOT EXISTS dn_baseline (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='基线管理';
 
 -- 基线关联任务表
-CREATE TABLE IF NOT EXISTS dn_baseline_task (
+CREATE TABLE IF NOT EXISTS dl_baseline_task (
     id          BIGINT AUTO_INCREMENT PRIMARY KEY,
     baseline_id BIGINT NOT NULL COMMENT '基线ID',
     task_id     BIGINT NOT NULL COMMENT '任务ID',
@@ -809,9 +809,9 @@ CREATE TABLE IF NOT EXISTS dn_baseline_task (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='基线关联任务';
 
 -- 表评论
-CREATE TABLE IF NOT EXISTS dn_table_comment (
+CREATE TABLE IF NOT EXISTS dl_table_comment (
     id            BIGINT AUTO_INCREMENT PRIMARY KEY,
-    table_meta_id BIGINT NOT NULL COMMENT '关联 dn_table_meta.id',
+    table_meta_id BIGINT NOT NULL COMMENT '关联 dl_table_meta.id',
     content       TEXT NOT NULL COMMENT '评论内容',
     created_by    VARCHAR(100) DEFAULT 'default',
     created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -819,7 +819,7 @@ CREATE TABLE IF NOT EXISTS dn_table_comment (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='表评论';
 
 -- 任务依赖关系表（通过解析 SQL 自动计算）
-CREATE TABLE IF NOT EXISTS dn_task_dependency (
+CREATE TABLE IF NOT EXISTS dl_task_dependency (
     id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
     task_id            BIGINT       NOT NULL COMMENT '下游任务ID',
     task_type          VARCHAR(16)  NOT NULL COMMENT 'script / syncTask',
@@ -830,7 +830,7 @@ CREATE TABLE IF NOT EXISTS dn_task_dependency (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='任务依赖关系';
 
 -- 每日调度运行记录表
-CREATE TABLE IF NOT EXISTS dn_scheduler_run (
+CREATE TABLE IF NOT EXISTS dl_scheduler_run (
     id            BIGINT AUTO_INCREMENT PRIMARY KEY,
     task_id       BIGINT       NOT NULL COMMENT '任务ID',
     task_type     VARCHAR(16)  NOT NULL COMMENT 'script / syncTask',
@@ -848,7 +848,7 @@ CREATE TABLE IF NOT EXISTS dn_scheduler_run (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='调度运行记录';
 
 -- 数据质量规则表
-CREATE TABLE IF NOT EXISTS dn_quality_rule (
+CREATE TABLE IF NOT EXISTS dl_quality_rule (
     id            BIGINT AUTO_INCREMENT PRIMARY KEY,
     rule_name     VARCHAR(200) NOT NULL COMMENT '规则名称',
     rule_type     VARCHAR(50)  NOT NULL COMMENT '规则类型: null_check/unique_check/value_range/regex_check/custom_sql',
@@ -867,7 +867,7 @@ CREATE TABLE IF NOT EXISTS dn_quality_rule (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='数据质量规则';
 
 -- 数据质量检查执行记录表
-CREATE TABLE IF NOT EXISTS dn_quality_run (
+CREATE TABLE IF NOT EXISTS dl_quality_run (
     id           BIGINT AUTO_INCREMENT PRIMARY KEY,
     rule_id      BIGINT       NOT NULL COMMENT '规则ID',
     run_status   VARCHAR(20)  NOT NULL COMMENT '运行状态: success/failed/error',
@@ -886,7 +886,7 @@ CREATE TABLE IF NOT EXISTS dn_quality_run (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='数据质量检查记录';
 
 -- 表元数据（包含 view_count 和 row_count）
-CREATE TABLE IF NOT EXISTS dn_table_meta (
+CREATE TABLE IF NOT EXISTS dl_table_meta (
     id            BIGINT AUTO_INCREMENT PRIMARY KEY,
     datasource_id BIGINT       NOT NULL COMMENT '数据源ID',
     database_name VARCHAR(100) NOT NULL COMMENT '数据库名',
@@ -903,7 +903,7 @@ CREATE TABLE IF NOT EXISTS dn_table_meta (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='表元数据';
 
 -- 字段元数据
-CREATE TABLE IF NOT EXISTS dn_column_meta (
+CREATE TABLE IF NOT EXISTS dl_column_meta (
     id            BIGINT AUTO_INCREMENT PRIMARY KEY,
     table_meta_id BIGINT       NOT NULL COMMENT '表元数据ID',
     column_name   VARCHAR(200) NOT NULL COMMENT '字段名',
@@ -916,7 +916,7 @@ CREATE TABLE IF NOT EXISTS dn_column_meta (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='字段元数据';
 
 -- 指标定义表
-CREATE TABLE IF NOT EXISTS dn_metric (
+CREATE TABLE IF NOT EXISTS dl_metric (
     id           BIGINT AUTO_INCREMENT PRIMARY KEY,
     metric_name  VARCHAR(200) NOT NULL COMMENT '指标名称',
     metric_code  VARCHAR(100) NOT NULL COMMENT '指标编码(唯一)',
@@ -935,7 +935,7 @@ CREATE TABLE IF NOT EXISTS dn_metric (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='指标定义';
 
 -- 主题域配置表
-CREATE TABLE IF NOT EXISTS dn_subject (
+CREATE TABLE IF NOT EXISTS dl_subject (
     id         BIGINT AUTO_INCREMENT PRIMARY KEY,
     name       VARCHAR(64) NOT NULL COMMENT '主题名称',
     parent_id  BIGINT      DEFAULT NULL COMMENT '父主题ID(NULL表示一级主题)',
@@ -945,7 +945,7 @@ CREATE TABLE IF NOT EXISTS dn_subject (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='主题域配置';
 
 -- 分组表
-CREATE TABLE IF NOT EXISTS dn_group (
+CREATE TABLE IF NOT EXISTS dl_group (
     id          BIGINT AUTO_INCREMENT PRIMARY KEY,
     group_name  VARCHAR(64)  NOT NULL COMMENT '分组名称',
     description VARCHAR(256) DEFAULT NULL COMMENT '分组描述',
@@ -954,7 +954,7 @@ CREATE TABLE IF NOT EXISTS dn_group (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='告警分组';
 
 -- 分组成员表
-CREATE TABLE IF NOT EXISTS dn_group_member (
+CREATE TABLE IF NOT EXISTS dl_group_member (
     id         BIGINT AUTO_INCREMENT PRIMARY KEY,
     group_id   BIGINT      NOT NULL COMMENT '分组ID',
     username   VARCHAR(64) NOT NULL COMMENT '用户名',
@@ -964,7 +964,7 @@ CREATE TABLE IF NOT EXISTS dn_group_member (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='分组成员';
 
 -- 告警配置表
-CREATE TABLE IF NOT EXISTS dn_alert_config (
+CREATE TABLE IF NOT EXISTS dl_alert_config (
     id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
     script_id           BIGINT       NOT NULL COMMENT '关联脚本ID',
     alert_types         VARCHAR(256) DEFAULT '["failure"]' COMMENT '告警类型JSON数组(failure/delay/quality)',
@@ -979,7 +979,7 @@ CREATE TABLE IF NOT EXISTS dn_alert_config (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='告警配置';
 
 -- 表收藏
-CREATE TABLE IF NOT EXISTS dn_table_favorite (
+CREATE TABLE IF NOT EXISTS dl_table_favorite (
     id            BIGINT AUTO_INCREMENT PRIMARY KEY,
     database_name VARCHAR(100) NOT NULL COMMENT '数据库名',
     table_name    VARCHAR(200) NOT NULL COMMENT '表名',
@@ -989,7 +989,7 @@ CREATE TABLE IF NOT EXISTS dn_table_favorite (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='表收藏';
 
 -- 搜索历史
-CREATE TABLE IF NOT EXISTS dn_search_history (
+CREATE TABLE IF NOT EXISTS dl_search_history (
     id            BIGINT AUTO_INCREMENT PRIMARY KEY,
     database_name VARCHAR(100) NOT NULL COMMENT '数据库名',
     table_name    VARCHAR(200) NOT NULL COMMENT '表名',
@@ -999,7 +999,7 @@ CREATE TABLE IF NOT EXISTS dn_search_history (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='搜索历史';
 
 -- 系统配置表（AI配置等全局设置）
-CREATE TABLE IF NOT EXISTS dn_system_config (
+CREATE TABLE IF NOT EXISTS dl_system_config (
     config_key   VARCHAR(100) NOT NULL PRIMARY KEY COMMENT '配置键',
     config_value TEXT COMMENT '配置值（敏感信息加密存储）',
     description  VARCHAR(200) COMMENT '配置说明',
@@ -1159,10 +1159,10 @@ INSERT INTO base_dic (dic_type, dic_code, dic_name, sort_order) VALUES
 ('rating', '2', '中评', 2),
 ('rating', '3', '差评', 3);
 
-USE datanote;
+USE datalink;
 
 -- 预置常用主题域
-INSERT INTO dn_subject (name, parent_id, layer, sort_order) VALUES
+INSERT INTO dl_subject (name, parent_id, layer, sort_order) VALUES
 ('交易', NULL, 'ALL', 1),
 ('用户', NULL, 'ALL', 2),
 ('商品', NULL, 'ALL', 3),
@@ -1171,7 +1171,7 @@ INSERT INTO dn_subject (name, parent_id, layer, sort_order) VALUES
 ('财务', NULL, 'ALL', 6);
 
 -- 二级主题示例
-INSERT INTO dn_subject (name, parent_id, layer, sort_order) VALUES
+INSERT INTO dl_subject (name, parent_id, layer, sort_order) VALUES
 ('订单', 1, 'ALL', 1),
 ('支付', 1, 'ALL', 2),
 ('退款', 1, 'ALL', 3),
@@ -1180,16 +1180,16 @@ INSERT INTO dn_subject (name, parent_id, layer, sort_order) VALUES
 ('画像', 2, 'ALL', 3);
 
 -- ============================================================
--- DataNote 默认数据（文件夹 + 数据源 + 同步任务 + 示例脚本）
+-- DataLink 默认数据（文件夹 + 数据源 + 同步任务 + 示例脚本）
 -- ============================================================
-USE datanote;
+USE datalink;
 
 -- 默认数据源：本地 MySQL（Docker 环境指向容器内 MySQL）
-INSERT INTO dn_datasource (name, type, host, port, username, password, database_name, status, created_by)
+INSERT INTO dl_datasource (name, type, host, port, username, password, database_name, status, created_by)
 VALUES ('本地 MySQL', 'MySQL', 'mysql', 3306, 'root', 'root', '', 1, 'admin');
 
 -- 默认文件夹结构（parent_id=0 表示顶级）
-INSERT INTO dn_script_folder (folder_name, parent_id, layer, sort_order) VALUES
+INSERT INTO dl_script_folder (folder_name, parent_id, layer, sort_order) VALUES
 ('数据源', 0, '数据源', -1),
 ('ODS 层', 0, 'ODS', 0),
 ('DWD 层', 0, 'DWD', 3),
@@ -1198,7 +1198,7 @@ INSERT INTO dn_script_folder (folder_name, parent_id, layer, sort_order) VALUES
 ('脚本',   0, '脚本', 6);
 
 -- ODS 同步任务（电商示例表，source_ds_id=1 对应上面的数据源）
-INSERT INTO dn_sync_task (task_name, source_ds_id, source_db, source_table, target_db, target_table, sync_mode, partition_field, schedule_cron, schedule_status, warning_type, retry_times, retry_interval, timeout_seconds) VALUES
+INSERT INTO dl_sync_task (task_name, source_ds_id, source_db, source_table, target_db, target_table, sync_mode, partition_field, schedule_cron, schedule_status, warning_type, retry_times, retry_interval, timeout_seconds) VALUES
 ('ods_order_center_order_info_df',       1, 'order_center', 'order_info',       'ods', 'ods_order_center_order_info_df',       'df', 'dt', '0 0 2 * * ?', 'online', 'FAILURE', 1, 60, 3600),
 ('ods_order_center_order_detail_df',     1, 'order_center', 'order_detail',     'ods', 'ods_order_center_order_detail_df',     'df', 'dt', '0 0 2 * * ?', 'online', 'FAILURE', 1, 60, 3600),
 ('ods_order_center_order_status_log_df', 1, 'order_center', 'order_status_log', 'ods', 'ods_order_center_order_status_log_df', 'df', 'dt', '0 0 2 * * ?', 'online', 'FAILURE', 1, 60, 3600),
@@ -1207,8 +1207,539 @@ INSERT INTO dn_sync_task (task_name, source_ds_id, source_db, source_table, targ
 ('ods_order_center_order_sub_df',        1, 'order_center', 'order_sub',        'ods', 'ods_order_center_order_sub_df',        'df', 'dt', '0 0 2 * * ?', 'online', 'FAILURE', 1, 60, 3600);
 
 -- DWD 示例脚本（folder_id=3 对应 DWD 层）
-INSERT INTO dn_script (folder_id, script_name, script_type, database_name, content, task_type, model_desc, subject, schedule_cron, schedule_status, warning_type, retry_times, retry_interval, timeout_seconds) VALUES
+INSERT INTO dl_script (folder_id, script_name, script_type, database_name, content, task_type, model_desc, subject, schedule_cron, schedule_status, warning_type, retry_times, retry_interval, timeout_seconds) VALUES
 (3, 'dwd_trad_order_detail_df', 'hive', 'dwd',
 '-- DWD 交易订单明细宽表\n-- 粒度: 一行 = 一个订单明细（SKU 级别）\n\nINSERT OVERWRITE TABLE dwd.dwd_trad_order_detail_df PARTITION (dt = ''${bizdate}'')\nSELECT\n     t1.id AS order_id\n    ,t1.order_no\n    ,t1.user_id\n    ,t2.id AS detail_id\n    ,t2.sku_id\n    ,t2.sku_name\n    ,t2.sku_num\n    ,t2.unit_price\n    ,t2.split_total_amount\n    ,t1.total_amount\n    ,t1.pay_amount\n    ,t1.pay_type\n    ,t1.order_status\n    ,t1.create_time\nFROM ods.ods_order_center_order_info_df t1\nLEFT JOIN ods.ods_order_center_order_detail_df t2\nON t1.id = t2.order_id\nWHERE t1.dt = ''${bizdate}''\nAND t2.dt = ''${bizdate}''\n;',
 '核心模型', 'DWD交易订单明细宽表，关联主订单和订单明细，SKU粒度', '交易',
 '0 0 2 * * ?', 'online', 'FAILURE', 1, 60, 3600);
+-- ============================================================
+-- RBAC 权限体系 + 操作审计日志
+-- ============================================================
+
+-- 用户表（如不存在则创建）
+CREATE TABLE IF NOT EXISTS dl_user (
+    id          BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    username    VARCHAR(64)  NOT NULL COMMENT '登录名',
+    password    VARCHAR(128) NOT NULL COMMENT 'bcrypt加密密码',
+    nickname    VARCHAR(64)  DEFAULT NULL COMMENT '昵称',
+    role        VARCHAR(32)  DEFAULT 'USER' COMMENT '角色（兜底字段）',
+    status      TINYINT      DEFAULT 1 COMMENT '1启用 0禁用',
+    created_at  DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_username (username)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
+
+-- 角色表
+CREATE TABLE IF NOT EXISTS dl_role (
+    id          BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    role_code   VARCHAR(64)  NOT NULL COMMENT '角色编码，如 ADMIN/DEVELOPER/VIEWER',
+    role_name   VARCHAR(64)  NOT NULL COMMENT '角色名称',
+    description VARCHAR(255) DEFAULT NULL COMMENT '描述',
+    status      TINYINT      NOT NULL DEFAULT 1 COMMENT '1启用 0禁用',
+    created_at  DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    updated_at  DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_role_code (role_code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色表';
+
+-- 权限表
+CREATE TABLE IF NOT EXISTS dl_permission (
+    id              BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    perm_code       VARCHAR(128) NOT NULL COMMENT '权限编码，如 script:create / datasource:delete',
+    perm_name       VARCHAR(128) NOT NULL COMMENT '权限名称',
+    perm_group      VARCHAR(64)  DEFAULT NULL COMMENT '权限分组',
+    description     VARCHAR(255) DEFAULT NULL COMMENT '描述',
+    created_at      DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_perm_code (perm_code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='权限表';
+
+-- 用户-角色关联表
+CREATE TABLE IF NOT EXISTS dl_user_role (
+    id          BIGINT   NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id     BIGINT   NOT NULL COMMENT '用户ID',
+    role_id     BIGINT   NOT NULL COMMENT '角色ID',
+    created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_user_role (user_id, role_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户角色关联表';
+
+-- 角色-权限关联表
+CREATE TABLE IF NOT EXISTS dl_role_permission (
+    id            BIGINT   NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    role_id       BIGINT   NOT NULL COMMENT '角色ID',
+    permission_id BIGINT   NOT NULL COMMENT '权限ID',
+    created_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_role_perm (role_id, permission_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色权限关联表';
+
+-- 操作审计日志表
+CREATE TABLE IF NOT EXISTS dl_audit_log (
+    id           BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id      BIGINT       DEFAULT NULL COMMENT '操作人ID',
+    username     VARCHAR(64)  DEFAULT NULL COMMENT '操作人用户名',
+    module       VARCHAR(64)  DEFAULT NULL COMMENT '模块',
+    operation    VARCHAR(128) DEFAULT NULL COMMENT '操作描述',
+    method       VARCHAR(16)  DEFAULT NULL COMMENT 'HTTP方法',
+    request_uri  VARCHAR(512) DEFAULT NULL COMMENT '请求URI',
+    request_params TEXT       DEFAULT NULL COMMENT '请求参数',
+    ip_address   VARCHAR(64)  DEFAULT NULL COMMENT 'IP地址',
+    status       TINYINT      DEFAULT NULL COMMENT '1成功 0失败',
+    error_msg    VARCHAR(1024) DEFAULT NULL COMMENT '错误信息',
+    cost_ms      BIGINT       DEFAULT NULL COMMENT '耗时(ms)',
+    created_at   DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_user (user_id),
+    KEY idx_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='操作审计日志表';
+
+-- 初始化默认角色
+INSERT INTO dl_role (role_code, role_name, description, status) VALUES
+('ADMIN', '管理员', '拥有所有权限', 1),
+('DEVELOPER', '开发者', '数据开发与运维权限', 1),
+('VIEWER', '只读用户', '仅查看权限', 1)
+ON DUPLICATE KEY UPDATE role_name=VALUES(role_name);
+
+-- 初始化默认权限
+INSERT INTO dl_permission (perm_code, perm_name, perm_group) VALUES
+('script:create', '创建脚本', '数据开发'),
+('script:edit', '编辑脚本', '数据开发'),
+('script:delete', '删除脚本', '数据开发'),
+('script:execute', '执行脚本', '数据开发'),
+('script:publish', '发布脚本', '数据开发'),
+('datasource:create', '创建数据源', '数据源'),
+('datasource:edit', '编辑数据源', '数据源'),
+('datasource:delete', '删除数据源', '数据源'),
+('datasource:view', '查看数据源', '数据源'),
+('sync:create', '创建同步任务', '数据集成'),
+('sync:edit', '编辑同步任务', '数据集成'),
+('sync:delete', '删除同步任务', '数据集成'),
+('sync:execute', '执行同步任务', '数据集成'),
+('quality:create', '创建质量规则', '数据质量'),
+('quality:execute', '执行质量检查', '数据质量'),
+('model:create', '创建模型', '数据建模'),
+('model:edit', '编辑模型', '数据建模'),
+('model:publish', '发布模型', '数据建模'),
+('user:manage', '用户管理', '系统管理'),
+('role:manage', '角色管理', '系统管理'),
+('system:config', '系统配置', '系统管理')
+ON DUPLICATE KEY UPDATE perm_name=VALUES(perm_name);
+
+-- 管理员拥有所有权限
+INSERT INTO dl_role_permission (role_id, permission_id)
+SELECT r.id, p.id FROM dl_role r, dl_permission p WHERE r.role_code = 'ADMIN';
+
+-- 开发者权限
+INSERT INTO dl_role_permission (role_id, permission_id)
+SELECT r.id, p.id FROM dl_role r, dl_permission p
+WHERE r.role_code = 'DEVELOPER' AND p.perm_code NOT IN ('user:manage', 'role:manage', 'system:config');
+
+-- 只读用户权限
+INSERT INTO dl_role_permission (role_id, permission_id)
+SELECT r.id, p.id FROM dl_role r, dl_permission p
+WHERE r.role_code = 'VIEWER' AND p.perm_code LIKE '%:view';
+
+-- 给已有用户分配默认角色（如果用户表存在）
+-- ADMIN 角色用户分配管理员角色，其他分配开发者角色
+INSERT IGNORE INTO dl_user_role (user_id, role_id)
+SELECT u.id, r.id FROM dl_user u, dl_role r
+WHERE (u.role = 'ADMIN' AND r.role_code = 'ADMIN')
+   OR (u.role != 'ADMIN' AND r.role_code = 'DEVELOPER');
+-- 告警通知渠道配置表
+CREATE TABLE IF NOT EXISTS dl_alert_channel (
+    id           BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    channel_name VARCHAR(64)  NOT NULL COMMENT '渠道名称',
+    channel_type VARCHAR(32)  NOT NULL COMMENT '渠道类型: dingtalk/wechat/email/webhook',
+    config       TEXT         DEFAULT NULL COMMENT '渠道配置JSON',
+    enabled      TINYINT      NOT NULL DEFAULT 1 COMMENT '是否启用',
+    created_at   DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    updated_at   DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='告警通知渠道';
+-- SQL 审批流程表
+CREATE TABLE IF NOT EXISTS dl_sql_approval (
+    id            BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    title         VARCHAR(256) DEFAULT NULL COMMENT '申请标题',
+    sql_text      TEXT         NOT NULL COMMENT '待审批SQL',
+    sql_type      VARCHAR(32)  NOT NULL COMMENT 'SQL类型: SELECT/INSERT/UPDATE/DELETE/DROP/ALTER/TRUNCATE/CREATE',
+    datasource_id BIGINT       DEFAULT NULL COMMENT '数据源ID',
+    database_name VARCHAR(100) DEFAULT NULL COMMENT '数据库名',
+    applicant     VARCHAR(64)  NOT NULL COMMENT '申请人',
+    applicant_remark VARCHAR(512) DEFAULT NULL COMMENT '申请说明',
+    status        VARCHAR(16)  NOT NULL DEFAULT 'PENDING' COMMENT '状态: PENDING/APPROVED/REJECTED/EXECUTED',
+    approver      VARCHAR(64)  DEFAULT NULL COMMENT '审批人',
+    approve_remark VARCHAR(512) DEFAULT NULL COMMENT '审批意见',
+    approve_time  DATETIME     DEFAULT NULL COMMENT '审批时间',
+    executor      VARCHAR(64)  DEFAULT NULL COMMENT '执行人',
+    execute_time  DATETIME     DEFAULT NULL COMMENT '执行时间',
+    execute_result TEXT        DEFAULT NULL COMMENT '执行结果',
+    created_at    DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    updated_at    DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY idx_status (status),
+    KEY idx_applicant (applicant)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='SQL审批流程';
+-- 数据字典表
+CREATE TABLE IF NOT EXISTS dl_dict_type (
+    id           BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    dict_code    VARCHAR(64)  NOT NULL COMMENT '字典类型编码',
+    dict_name    VARCHAR(128) NOT NULL COMMENT '字典类型名称',
+    description  VARCHAR(255) DEFAULT NULL COMMENT '描述',
+    status       TINYINT      DEFAULT 1 COMMENT '1启用 0禁用',
+    created_by   VARCHAR(64)  DEFAULT NULL,
+    created_at   DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    updated_at   DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_dict_code (dict_code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='字典类型表';
+
+CREATE TABLE IF NOT EXISTS dl_dict_item (
+    id           BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    dict_code    VARCHAR(64)  NOT NULL COMMENT '所属字典类型编码',
+    item_label   VARCHAR(128) NOT NULL COMMENT '字典项显示名称',
+    item_value   VARCHAR(255) NOT NULL COMMENT '字典项值',
+    sort_order   INT          DEFAULT 0 COMMENT '排序',
+    status       TINYINT      DEFAULT 1 COMMENT '1启用 0禁用',
+    remark       VARCHAR(255) DEFAULT NULL COMMENT '备注',
+    created_at   DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    updated_at   DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY idx_dict_code (dict_code),
+    UNIQUE KEY uk_dict_value (dict_code, item_value)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='字典项表';
+
+-- ============================================================
+-- 站内消息与公告表
+-- ============================================================
+
+-- ============================================================
+-- 站内消息与公告表
+-- ============================================================
+
+-- 系统公告表
+CREATE TABLE IF NOT EXISTS dl_announcement (
+    id           BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    title        VARCHAR(200) NOT NULL COMMENT '公告标题',
+    content      TEXT         NOT NULL COMMENT '公告内容',
+    type         VARCHAR(32)  DEFAULT 'notice' COMMENT '类型: notice通知/announcement公告/maintenance维护',
+    priority     TINYINT      DEFAULT 0 COMMENT '优先级: 0普通 1重要 2紧急',
+    status       TINYINT      DEFAULT 1 COMMENT '1已发布 0草稿',
+    publish_time DATETIME     DEFAULT NULL COMMENT '发布时间',
+    created_by   VARCHAR(64)  DEFAULT NULL,
+    created_at   DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    updated_at   DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY idx_status (status),
+    KEY idx_publish_time (publish_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统公告表';
+
+-- 站内消息表
+CREATE TABLE IF NOT EXISTS dl_message (
+    id           BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    receiver     VARCHAR(64)  NOT NULL COMMENT '接收人用户名',
+    title        VARCHAR(200) NOT NULL COMMENT '消息标题',
+    content      TEXT         DEFAULT NULL COMMENT '消息内容',
+    type         VARCHAR(32)  DEFAULT 'system' COMMENT '类型: system系统/task任务/approval审批/alert告警',
+    biz_id       BIGINT       DEFAULT NULL COMMENT '关联业务ID(如任务ID/审批ID)',
+    is_read      TINYINT      DEFAULT 0 COMMENT '0未读 1已读',
+    created_at   DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_receiver (receiver),
+    KEY idx_is_read (is_read),
+    KEY idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='站内消息表';
+
+-- 初始化公告类型字典
+INSERT INTO dl_dict_type (dict_code, dict_name, description, status) VALUES
+('announcement_type', '公告类型', '系统公告分类', 1)
+ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
+
+INSERT INTO dl_dict_item (dict_code, item_label, item_value, sort_order, status) VALUES
+('announcement_type', '通知', 'notice', 1, 1),
+('announcement_type', '公告', 'announcement', 2, 1),
+('announcement_type', '维护', 'maintenance', 3, 1)
+ON DUPLICATE KEY UPDATE item_label = VALUES(item_label);
+
+-- 初始化消息类型字典
+INSERT INTO dl_dict_type (dict_code, dict_name, description, status) VALUES
+('message_type', '消息类型', '站内消息分类', 1)
+ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
+
+INSERT INTO dl_dict_item (dict_code, item_label, item_value, sort_order, status) VALUES
+('message_type', '系统消息', 'system', 1, 1),
+('message_type', '任务通知', 'task', 2, 1),
+('message_type', '审批通知', 'approval', 3, 1),
+('message_type', '告警消息', 'alert', 4, 1)
+ON DUPLICATE KEY UPDATE item_label = VALUES(item_label);
+-- ============================================================
+-- 数据导入记录表
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dl_data_import (
+    id              BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    file_name       VARCHAR(255) NOT NULL COMMENT '原始文件名',
+    file_size       BIGINT       DEFAULT NULL COMMENT '文件大小(字节)',
+    datasource_id   BIGINT       DEFAULT NULL COMMENT '目标数据源ID',
+    database_name   VARCHAR(128) DEFAULT NULL COMMENT '目标库名',
+    table_name      VARCHAR(128) NOT NULL COMMENT '目标表名',
+    row_count       INT          DEFAULT 0 COMMENT '导入行数',
+    column_count    INT          DEFAULT 0 COMMENT '列数',
+    columns_info    TEXT         DEFAULT NULL COMMENT '列信息JSON',
+    status          VARCHAR(16)  DEFAULT 'SUCCESS' COMMENT 'SUCCESS/FAILED/PARTIAL',
+    error_message   TEXT         DEFAULT NULL COMMENT '错误信息',
+    created_by      VARCHAR(64)  DEFAULT NULL,
+    created_at      DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_created_by (created_by),
+    KEY idx_table_name (table_name),
+    KEY idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='数据导入记录表';
+
+-- 数据写入权限
+INSERT INTO dl_permission (perm_code, perm_name, perm_group, description) VALUES
+('data:write', '数据写入', '数据', '导入数据、写操作')
+ON DUPLICATE KEY UPDATE perm_name = VALUES(perm_name);
+
+-- 将数据写入权限分配给ADMIN角色
+INSERT INTO dl_role_permission (role_id, permission_id)
+SELECT r.id, p.id FROM dl_role r, dl_permission p
+WHERE r.role_code = 'ADMIN' AND p.perm_code = 'data:write'
+ON DUPLICATE KEY UPDATE role_id = role_id;
+
+-- ============================================================
+-- 数据服务 API 表
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dl_data_api (
+    id              BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    api_code        VARCHAR(64)  NOT NULL COMMENT 'API编码(唯一，URL路径)',
+    api_name        VARCHAR(128) NOT NULL COMMENT 'API名称',
+    description     VARCHAR(512) DEFAULT NULL COMMENT '描述',
+    datasource_id   BIGINT       NOT NULL COMMENT '数据源ID',
+    sql_template    TEXT         NOT NULL COMMENT 'SQL模板(可用#{param}占位)',
+    method          VARCHAR(16)  DEFAULT 'GET' COMMENT 'HTTP方法 GET/POST',
+    response_type   VARCHAR(16)  DEFAULT 'json' COMMENT '响应类型 json/csv',
+    row_limit       INT          DEFAULT 1000 COMMENT '返回行数上限',
+    cache_seconds   INT          DEFAULT 0 COMMENT '缓存秒数(0=不缓存)',
+    api_key         VARCHAR(128) DEFAULT NULL COMMENT '调用密钥(为空则无需鉴权)',
+    status          TINYINT      DEFAULT 1 COMMENT '1已发布 0未发布',
+    call_count      BIGINT       DEFAULT 0 COMMENT '累计调用次数',
+    created_by      VARCHAR(64)  DEFAULT NULL,
+    created_at      DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_api_code (api_code),
+    KEY idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='数据服务API表';
+
+CREATE TABLE IF NOT EXISTS dl_data_api_log (
+    id              BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    api_id          BIGINT       NOT NULL COMMENT 'API ID',
+    api_code        VARCHAR(64)  NOT NULL COMMENT 'API编码',
+    caller          VARCHAR(128) DEFAULT NULL COMMENT '调用方标识',
+    request_params  TEXT         DEFAULT NULL COMMENT '请求参数JSON',
+    response_status VARCHAR(16)  DEFAULT NULL COMMENT 'SUCCESS/FAILED',
+    row_count       INT          DEFAULT 0 COMMENT '返回行数',
+    duration_ms     INT          DEFAULT 0 COMMENT '耗时(毫秒)',
+    error_message   TEXT         DEFAULT NULL COMMENT '错误信息',
+    created_at      DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_api_id (api_id),
+    KEY idx_api_code (api_code),
+    KEY idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='数据API调用日志表';
+
+-- ============================================================
+-- 数据权限表（行级/列级）
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dl_data_permission (
+    id              BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    role_id         BIGINT       NOT NULL COMMENT '角色ID',
+    datasource_id   BIGINT       DEFAULT NULL COMMENT '数据源ID(NULL=全部)',
+    table_name      VARCHAR(128) NOT NULL COMMENT '表名',
+    column_name     VARCHAR(128) DEFAULT NULL COMMENT '列名(NULL=行级权限)',
+    permission_type VARCHAR(32)  NOT NULL COMMENT 'HIDE隐藏列/MASK脱敏列/ROW_FILTER行过滤',
+    rule_value      VARCHAR(512) DEFAULT NULL COMMENT '脱敏规则名 或 行过滤SQL条件',
+    enabled         TINYINT      DEFAULT 1 COMMENT '1启用 0禁用',
+    description     VARCHAR(255) DEFAULT NULL,
+    created_by      VARCHAR(64)  DEFAULT NULL,
+    created_at      DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY idx_role_id (role_id),
+    KEY idx_table (datasource_id, table_name),
+    KEY idx_permission_type (permission_type)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='数据权限表(行级/列级)';
+
+INSERT INTO dl_dict_type (dict_code, dict_name, description, status) VALUES
+('data_permission_type', '数据权限类型', '行级列级数据权限', 1)
+ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
+
+INSERT INTO dl_dict_item (dict_code, item_label, item_value, sort_order, status) VALUES
+('data_permission_type', '隐藏列', 'HIDE', 1, 1),
+('data_permission_type', '脱敏列', 'MASK', 2, 1),
+('data_permission_type', '行过滤', 'ROW_FILTER', 3, 1)
+ON DUPLICATE KEY UPDATE item_label = VALUES(item_label);
+
+-- ============================================================
+-- 数据资产目录表
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dl_asset (
+    id              BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    datasource_id   BIGINT       DEFAULT NULL COMMENT '数据源ID',
+    table_name      VARCHAR(128) NOT NULL COMMENT '表名',
+    asset_name      VARCHAR(256) DEFAULT NULL COMMENT '资产名称(业务名称)',
+    description     TEXT         DEFAULT NULL COMMENT '资产描述',
+    asset_level     TINYINT      DEFAULT 1 COMMENT '资产分级:1公开 2内部 3机密 4绝密',
+    owner           VARCHAR(64)  DEFAULT NULL COMMENT '资产负责人',
+    business_domain VARCHAR(64)  DEFAULT NULL COMMENT '业务域',
+    tags            VARCHAR(512) DEFAULT NULL COMMENT '标签(逗号分隔)',
+    access_count    BIGINT       DEFAULT 0 COMMENT '访问次数',
+    last_access_at  DATETIME     DEFAULT NULL COMMENT '最近访问时间',
+    status          TINYINT      DEFAULT 1 COMMENT '1上架 0下架',
+    created_by      VARCHAR(64)  DEFAULT NULL,
+    created_at      DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_table (datasource_id, table_name),
+    KEY idx_owner (owner),
+    KEY idx_level (asset_level),
+    KEY idx_business_domain (business_domain)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='数据资产目录表';
+
+CREATE TABLE IF NOT EXISTS dl_asset_tag (
+    id              BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    tag_name        VARCHAR(64)  NOT NULL COMMENT '标签名称',
+    tag_color       VARCHAR(16)  DEFAULT '#1890ff' COMMENT '标签颜色',
+    category        VARCHAR(64)  DEFAULT NULL COMMENT '标签分类',
+    created_by      VARCHAR(64)  DEFAULT NULL,
+    created_at      DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_tag_name (tag_name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='资产标签表';
+
+CREATE TABLE IF NOT EXISTS dl_asset_favorite (
+    id              BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    asset_id        BIGINT       NOT NULL COMMENT '资产ID',
+    user_id         BIGINT       NOT NULL COMMENT '用户ID',
+    created_at      DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_asset_user (asset_id, user_id),
+    KEY idx_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='资产收藏表';
+
+INSERT INTO dl_asset_tag (tag_name, tag_color, category) VALUES
+('核心表', '#f5222d', '重要性'),
+('常用表', '#fa8c16', '重要性'),
+('已归档', '#8c8c8c', '状态'),
+('需治理', '#faad14', '状态')
+ON DUPLICATE KEY UPDATE tag_name = VALUES(tag_name);
+
+INSERT INTO dl_dict_type (dict_code, dict_name, description, status) VALUES
+('asset_level', '资产分级', '数据资产安全分级', 1)
+ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
+
+INSERT INTO dl_dict_item (dict_code, item_label, item_value, sort_order, status) VALUES
+('asset_level', '公开', '1', 1, 1),
+('asset_level', '内部', '2', 2, 1),
+('asset_level', '机密', '3', 3, 1),
+('asset_level', '绝密', '4', 4, 1)
+ON DUPLICATE KEY UPDATE item_label = VALUES(item_label);
+
+-- metadata:edit 权限
+INSERT INTO dl_permission (perm_code, perm_name, perm_group, description) VALUES
+('metadata:edit', '元数据编辑', 'metadata', '编辑数据资产和元数据')
+ON DUPLICATE KEY UPDATE perm_name = VALUES(perm_name);
+
+INSERT INTO dl_role_permission (role_id, permission_id)
+SELECT r.id, p.id FROM dl_role r, dl_permission p
+WHERE r.role_code = 'ADMIN' AND p.perm_code = 'metadata:edit'
+ON DUPLICATE KEY UPDATE permission_id = VALUES(permission_id);
+
+-- ============================================================
+-- 数据生命周期管理表
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dl_lifecycle_policy (
+    id              BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    policy_name     VARCHAR(128) NOT NULL COMMENT '策略名称',
+    datasource_id   BIGINT       DEFAULT NULL COMMENT '数据源ID',
+    database_name   VARCHAR(128) NOT NULL COMMENT '数据库名',
+    table_name      VARCHAR(128) NOT NULL COMMENT '表名',
+    partition_column VARCHAR(128) DEFAULT NULL COMMENT '分区/时间列名',
+    policy_type     VARCHAR(32)  NOT NULL COMMENT 'DELETE/ARCHIVE/COLD',
+    retention_days  INT          NOT NULL COMMENT '保留天数',
+    archive_target  VARCHAR(256) DEFAULT NULL COMMENT '归档目标表名',
+    enabled         TINYINT      DEFAULT 1 COMMENT '1启用 0禁用',
+    schedule_cron   VARCHAR(64)  DEFAULT '0 0 2 * * ?' COMMENT '调度cron',
+    last_run_at     DATETIME     DEFAULT NULL,
+    description     VARCHAR(512) DEFAULT NULL,
+    created_by      VARCHAR(64)  DEFAULT NULL,
+    created_at      DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY idx_table (datasource_id, database_name, table_name),
+    KEY idx_policy_type (policy_type)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='数据生命周期策略表';
+
+CREATE TABLE IF NOT EXISTS dl_lifecycle_log (
+    id              BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    policy_id       BIGINT       NOT NULL,
+    run_status      VARCHAR(16)  DEFAULT NULL,
+    affected_rows   BIGINT       DEFAULT 0,
+    exec_sql        TEXT         DEFAULT NULL,
+    error_message   TEXT         DEFAULT NULL,
+    duration_ms     INT          DEFAULT 0,
+    started_at      DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    finished_at     DATETIME     DEFAULT NULL,
+    KEY idx_policy_id (policy_id),
+    KEY idx_started_at (started_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='生命周期执行日志表';
+
+INSERT INTO dl_dict_type (dict_code, dict_name, description, status) VALUES
+('lifecycle_policy_type', '生命周期策略类型', '数据生命周期管理策略', 1)
+ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
+
+INSERT INTO dl_dict_item (dict_code, item_label, item_value, sort_order, status) VALUES
+('lifecycle_policy_type', '过期删除', 'DELETE', 1, 1),
+('lifecycle_policy_type', '归档迁移', 'ARCHIVE', 2, 1),
+('lifecycle_policy_type', '冷数据标记', 'COLD', 3, 1)
+ON DUPLICATE KEY UPDATE item_label = VALUES(item_label);
+
+INSERT INTO dl_permission (perm_code, perm_name, perm_group, description) VALUES
+('data:governance', '数据治理', 'governance', '数据生命周期管理等治理操作')
+ON DUPLICATE KEY UPDATE perm_name = VALUES(perm_name);
+
+INSERT INTO dl_role_permission (role_id, permission_id)
+SELECT r.id, p.id FROM dl_role r, dl_permission p
+WHERE r.role_code = 'ADMIN' AND p.perm_code = 'data:governance'
+ON DUPLICATE KEY UPDATE permission_id = VALUES(permission_id);
+
+-- ============================================================
+-- 数据血缘表
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dl_lineage (
+    id              BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    source_db       VARCHAR(128) NOT NULL,
+    source_table    VARCHAR(128) NOT NULL,
+    target_db       VARCHAR(128) NOT NULL,
+    target_table    VARCHAR(128) NOT NULL,
+    transform_type  VARCHAR(32)  DEFAULT 'ETL',
+    transform_sql   TEXT         DEFAULT NULL,
+    job_id          BIGINT       DEFAULT NULL,
+    job_name        VARCHAR(128) DEFAULT NULL,
+    frequency       VARCHAR(32)  DEFAULT 'daily',
+    owner           VARCHAR(64)  DEFAULT NULL,
+    description     VARCHAR(512) DEFAULT NULL,
+    created_by      VARCHAR(64)  DEFAULT NULL,
+    created_at      DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY idx_source (source_db, source_table),
+    KEY idx_target (target_db, target_table)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='数据血缘关系表';
+
+CREATE TABLE IF NOT EXISTS dl_lineage_column (
+    id              BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    lineage_id      BIGINT       NOT NULL,
+    source_column   VARCHAR(128) DEFAULT NULL,
+    target_column   VARCHAR(128) DEFAULT NULL,
+    transform_expr  VARCHAR(512) DEFAULT NULL,
+    KEY idx_lineage_id (lineage_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='数据血缘字段映射表';
+
+INSERT INTO dl_dict_type (dict_code, dict_name, description, status) VALUES
+('lineage_transform_type', '血缘转换类型', '数据血缘转换类型', 1),
+('lineage_frequency', '同步频率', '数据同步频率', 1)
+ON DUPLICATE KEY UPDATE dict_name = VALUES(dict_name);
+
+INSERT INTO dl_dict_item (dict_code, item_label, item_value, sort_order, status) VALUES
+('lineage_transform_type', 'ETL', 'ETL', 1, 1),
+('lineage_transform_type', 'ELT', 'ELT', 2, 1),
+('lineage_transform_type', '数据复制', 'REPLICA', 3, 1),
+('lineage_transform_type', '聚合统计', 'AGG', 4, 1),
+('lineage_frequency', '实时', 'realtime', 1, 1),
+('lineage_frequency', '每小时', 'hourly', 2, 1),
+('lineage_frequency', '每天', 'daily', 3, 1),
+('lineage_frequency', '每周', 'weekly', 4, 1)
+ON DUPLICATE KEY UPDATE item_label = VALUES(item_label);
+
+-- 数据API限流字段
+ALTER TABLE dl_data_api ADD COLUMN IF NOT EXISTS rate_limit INT DEFAULT 0 COMMENT '每分钟调用限制(0=不限)' AFTER call_count;

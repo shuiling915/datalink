@@ -1,5 +1,5 @@
 -- 主题域配置表
-CREATE TABLE IF NOT EXISTS dn_subject (
+CREATE TABLE IF NOT EXISTS dl_subject (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(64) NOT NULL COMMENT '主题名称',
   parent_id BIGINT DEFAULT NULL COMMENT '父主题ID(NULL表示一级主题)',
@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS dn_subject (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='主题域配置';
 
 -- 预置常用主题域
-INSERT INTO dn_subject (name, parent_id, layer, sort_order) VALUES
+INSERT INTO dl_subject (name, parent_id, layer, sort_order) VALUES
 ('交易', NULL, 'ALL', 1),
 ('用户', NULL, 'ALL', 2),
 ('商品', NULL, 'ALL', 3),
@@ -18,7 +18,7 @@ INSERT INTO dn_subject (name, parent_id, layer, sort_order) VALUES
 ('财务', NULL, 'ALL', 6);
 
 -- 二级主题示例
-INSERT INTO dn_subject (name, parent_id, layer, sort_order) VALUES
+INSERT INTO dl_subject (name, parent_id, layer, sort_order) VALUES
 ('订单', 1, 'ALL', 1),
 ('支付', 1, 'ALL', 2),
 ('退款', 1, 'ALL', 3),

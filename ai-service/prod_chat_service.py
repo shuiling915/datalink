@@ -40,7 +40,7 @@ REDIS_URL = "redis://localhost:6379"
 
 # ============ 服务：需求管理的对话入口 ============
 app = FastAPI(title="需求管理 · 需求分析 Agent 服务")
-# 允许 datanote 页面(8099)跨域调用本服务
+# 允许 datalink 页面(8099)跨域调用本服务
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 

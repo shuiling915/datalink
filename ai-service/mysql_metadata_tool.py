@@ -7,7 +7,7 @@ MySQL 元数据查询工具（Function Calling / @tool）
 依赖：
   pip install pymysql langchain-core -i https://pypi.tuna.tsinghua.edu.cn/simple
 
-连接：本机 datanote-mysql —— localhost:3306, root/root
+连接：本机 datalink-mysql —— localhost:3306, root/root
 """
 import os
 import pymysql

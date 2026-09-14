@@ -1,7 +1,7 @@
--- DataNote 自研调度系统表
+-- DataLink 自研调度系统表
 
 -- 任务依赖关系表（通过解析 SQL 自动计算）
-CREATE TABLE IF NOT EXISTS dn_task_dependency (
+CREATE TABLE IF NOT EXISTS dl_task_dependency (
     id            BIGINT AUTO_INCREMENT PRIMARY KEY,
     task_id       BIGINT       NOT NULL COMMENT '下游任务ID',
     task_type     VARCHAR(16)  NOT NULL COMMENT 'script / syncTask',
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS dn_task_dependency (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='任务依赖关系';
 
 -- 每日调度运行记录表
-CREATE TABLE IF NOT EXISTS dn_scheduler_run (
+CREATE TABLE IF NOT EXISTS dl_scheduler_run (
     id            BIGINT AUTO_INCREMENT PRIMARY KEY,
     task_id       BIGINT       NOT NULL COMMENT '任务ID',
     task_type     VARCHAR(16)  NOT NULL COMMENT 'script / syncTask',

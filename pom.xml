@@ -11,11 +11,11 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.datanote</groupId>
-    <artifactId>datanote</artifactId>
+    <groupId>com.datalink</groupId>
+    <artifactId>datalink</artifactId>
     <version>1.0.0</version>
-    <name>DataNote</name>
-    <description>DataNote 数据开发平台</description>
+    <name>DataLink</name>
+    <description>DataLink 数据开发平台</description>
 
     <properties>
         <java.version>1.8</java.version>
@@ -27,6 +27,24 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- Spring Boot Actuator（健康检查/监控） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- Spring AOP（审计日志切面） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+        <!-- Spring Mail（告警邮件通知） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
 
         <!-- MyBatis-Plus -->
@@ -41,6 +59,21 @@
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
             <version>8.0.33</version>
+        </dependency>
+
+        <!-- PostgreSQL Driver -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.6.0</version>
+        </dependency>
+
+        <!-- ClickHouse Driver -->
+        <dependency>
+            <groupId>com.clickhouse</groupId>
+            <artifactId>clickhouse-jdbc</artifactId>
+            <version>0.4.6</version>
+            <classifier>all</classifier>
         </dependency>
 
         <!-- Hive JDBC -->
@@ -86,6 +119,13 @@
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
             <version>2.0.43</version>
+        </dependency>
+
+        <!-- Apache Commons CSV（CSV 导入导出） -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.10.0</version>
         </dependency>
 
         <!-- Lombok -->

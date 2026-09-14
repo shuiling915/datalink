@@ -1,0 +1,11 @@
+package com.datalink.model.dto;
+
+import lombok.Data;
+
+/**
+ * DataX 执行同步任务请求
+ */
+@Data
+public class DataxRunRequest {
+    private Long syncTaskId;
+}

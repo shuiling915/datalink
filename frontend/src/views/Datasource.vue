@@ -45,9 +45,11 @@
         <el-form-item label="数据源名称"><el-input v-model="form.name" placeholder="请输入数据源名称" /></el-form-item>
         <el-form-item label="数据源类型">
           <el-select v-model="form.type" placeholder="请选择类型" style="width: 100%;">
-            <el-option label="MySQL" value="MySQL" />
-            <el-option label="Hive" value="Hive" />
-            <el-option label="PostgreSQL" value="PostgreSQL" />
+            <el-option label="MySQL" value="mysql" />
+            <el-option label="PostgreSQL" value="postgresql" />
+            <el-option label="ClickHouse" value="clickhouse" />
+            <el-option label="Oracle" value="oracle" />
+            <el-option label="Hive" value="hive" />
           </el-select>
         </el-form-item>
         <el-form-item label="主机"><el-input v-model="form.host" placeholder="例如：127.0.0.1" /></el-form-item>
@@ -76,9 +78,9 @@ const loading = ref(false)
 const searchText = ref('')
 const dialogVisible = ref(false)
 const isEdit = ref(false)
-const form = ref({ id: null, name: '', type: 'MySQL', host: '', port: 3306, databaseName: '', username: '', password: '', status: 1 })
+const form = ref({ id: null, name: '', type: 'mysql', host: '', port: 3306, databaseName: '', username: '', password: '', status: 1 })
 
-const typeTag = (type) => ({ MySQL: '', Hive: 'warning', PostgreSQL: 'success' }[type] || 'info')
+const typeTag = (type) => ({ mysql: '', postgresql: 'success', clickhouse: 'warning', oracle: 'danger', hive: 'warning' }[type] || 'info')
 
 const loadData = async () => {
   loading.value = true
@@ -92,7 +94,7 @@ const loadData = async () => {
 
 const handleAdd = () => {
   isEdit.value = false
-  form.value = { id: null, name: '', type: 'MySQL', host: '', port: 3306, databaseName: '', username: '', password: '', status: 1 }
+  form.value = { id: null, name: '', type: 'mysql', host: '', port: 3306, databaseName: '', username: '', password: '', status: 1 }
   dialogVisible.value = true
 }
 

@@ -1,4 +1,4 @@
-# DataNote AI Service 依赖
+# DataLink AI Service 依赖
 # 安装：pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 fastapi
@@ -18,6 +18,6 @@ dashscope
 redis
 pymysql
 
-# 配置 / 加密（读 datanote 的加密 AI 配置）
+# 配置 / 加密（读 datalink 的加密 AI 配置）
 python-dotenv
 pycryptodome

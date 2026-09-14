@@ -41,8 +41,8 @@ ai-service/__pycache__/
 # 本地提交前安全闸门（只在本机用，不入库）
 scripts/git-guard-*
 
-# 本机部署配置（含密钥），只保留模板 datanote.conf.example
-datanote.conf
+# 本机部署配置（含密钥），只保留模板 datalink.conf.example
+datalink.conf
 
 # Frontend
 frontend/node_modules/
@@ -60,3 +60,5 @@ multimodal-data-lake/node_modules/
 multimodal-data-lake/frontend/node_modules/
 multimodal-data-lake/frontend/dist/
 multimodal-data-lake/**/__pycache__/
+# BI (DataEase) Docker volumes
+bi-docker/de-*

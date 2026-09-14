@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>数据开发 - DataNote</title>
+<title>数据开发 - DataLink</title>
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
@@ -1827,7 +1827,7 @@ html, body {
 <div class="dev-header">
   <a class="logo" href="index.html">
     <svg viewBox="0 0 28 28" fill="none"><rect x="2" y="2" width="24" height="24" rx="5" fill="#1890ff"/><path d="M8 9h12M8 14h8M8 19h10" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-    DataNote
+    DataLink
   </a>
   <nav class="header-tabs">
     <a class="header-tab" href="index.html">
@@ -3925,7 +3925,7 @@ function initMonacoEditor() {
   require.config({ paths: { vs: 'https://unpkg.com/monaco-editor@0.45.0/min/vs' } });
   require(['vs/editor/editor.main'], function() {
     // 定义暗色主题
-    monaco.editor.defineTheme('datanote-dark', {
+    monaco.editor.defineTheme('datalink-dark', {
       base: 'vs-dark',
       inherit: true,
       rules: [],
@@ -3942,7 +3942,7 @@ function initMonacoEditor() {
     monacoEditor = monaco.editor.create(document.getElementById('monacoContainer'), {
       value: '-- 请在左侧选择或新建脚本',
       language: 'sql',
-      theme: 'datanote-dark',
+      theme: 'datalink-dark',
       fontSize: 13,
       fontFamily: "'SF Mono', 'Fira Code', 'Consolas', monospace",
       minimap: { enabled: false },
@@ -4087,7 +4087,7 @@ function testDatasource() {
 }
 
 // ===== File tree loading =====
-const FILE_TREE_OPEN_STATE_KEY = 'datanote:fileTreeOpenFolders';
+const FILE_TREE_OPEN_STATE_KEY = 'datalink:fileTreeOpenFolders';
 
 function getOpenFolderState() {
   try {

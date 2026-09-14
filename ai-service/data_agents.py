@@ -1,7 +1,7 @@
 """
-取数 Agent + 核对 Agent + 状态机编排 —— datanote 需求管理的多 Agent 层
+取数 Agent + 核对 Agent + 状态机编排 —— datalink 需求管理的多 Agent 层
 ================================================================
-多 Agent 设计（见「datanote需求管理设计_MeegoAI.md」九·五）：
+多 Agent 设计（见「datalink需求管理设计_MeegoAI.md」九·五）：
   AI 在取数需求的不同阶段承担不同角色，按「需求状态」编排，各 Agent 通过读写
   同一个需求工作项（黑板模式）传递结果，不互相自由对话 —— 可控、可调试、全程留痕。
 
@@ -19,9 +19,9 @@ import re
 
 from langchain_core.messages import SystemMessage, HumanMessage, ToolMessage
 
-# 复用需求分析 Agent 已初始化好的模型（datanote 默认模型）和 RAG 工具
+# 复用需求分析 Agent 已初始化好的模型（datalink 默认模型）和 RAG 工具
 from requirement_analyst import model, search_knowledge
-from datanote_config import get_prompt
+from datalink_config import get_prompt
 from hive_metadata_tool import (
     HIVE_METADATA_TOOLS,
     HIVE_SQL_EXEC_TOOLS,
@@ -173,7 +173,7 @@ def run_query(spec: str, extra: str = "") -> dict:
 
 
 # ============ 数据开发页 AI 助手（统一走 LLM + RAG + 元数据） ============
-_DEV_ASSIST_PROMPT_FALLBACK = """你是 DataNote 数据开发页里的资深数仓开发助手。
+_DEV_ASSIST_PROMPT_FALLBACK = """你是 DataLink 数据开发页里的资深数仓开发助手。
 所有回答必须基于【RAG知识库内容 + 真实Hive元数据工具】完成，不能只凭通用知识编造表名、字段名或公司口径。
 
 回答风格：

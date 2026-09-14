@@ -1,5 +1,5 @@
 -- 告警配置表
-CREATE TABLE IF NOT EXISTS dn_alert_config (
+CREATE TABLE IF NOT EXISTS dl_alert_config (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   script_id BIGINT NOT NULL COMMENT '关联脚本ID',
   alert_types VARCHAR(256) DEFAULT '["failure"]' COMMENT '告警类型JSON数组(failure/delay/quality)',

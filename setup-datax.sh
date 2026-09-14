@@ -12,7 +12,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-CONF_FILE="$SCRIPT_DIR/datanote.conf"
+CONF_FILE="$SCRIPT_DIR/datalink.conf"
 
 # ---------- 颜色输出 ----------
 GREEN='\033[0;32m'
@@ -32,7 +32,7 @@ fi
 
 source "$CONF_FILE"
 
-CONTAINER_NAME="datanote-datax"
+CONTAINER_NAME="datalink-datax"
 
 # ---------- status ----------
 if [ "$1" = "status" ]; then
@@ -98,7 +98,7 @@ docker run -d \
   --hostname datax \
   -v /tmp/datax_jobs:/tmp/datax_jobs \
   --restart unless-stopped \
-  datadocker1018/datanote-base:1.0 \
+  datadocker1018/datalink-base:1.0 \
   tail -f /dev/null
 
 # 等待容器就绪
@@ -130,8 +130,8 @@ echo ""
 echo "  容器名：$CONTAINER_NAME"
 echo "  DATAX_MODE 已切换为 docker"
 echo ""
-echo "  注意：需要重启 DataNote 使配置生效"
-echo "  ./setup-datanote.sh stop && ./setup-datanote.sh"
+echo "  注意：需要重启 DataLink 使配置生效"
+echo "  ./setup-datalink.sh stop && ./setup-datalink.sh"
 echo ""
 echo "  停止：./setup-datax.sh stop"
 echo "============================================"

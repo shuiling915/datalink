@@ -5,7 +5,7 @@
 -- ============================================================
 
 -- 维度表（Dimension Table）
-CREATE TABLE IF NOT EXISTS dn_dimension (
+CREATE TABLE IF NOT EXISTS dl_dimension (
     id              BIGINT AUTO_INCREMENT PRIMARY KEY,
     dim_code        VARCHAR(100) NOT NULL COMMENT '维度编码',
     dim_name        VARCHAR(200) NOT NULL COMMENT '维度名称',
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS dn_dimension (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='维度表';
 
 -- 维度字段
-CREATE TABLE IF NOT EXISTS dn_dimension_field (
+CREATE TABLE IF NOT EXISTS dl_dimension_field (
     id              BIGINT AUTO_INCREMENT PRIMARY KEY,
     dim_id          BIGINT NOT NULL COMMENT '维度ID',
     field_name      VARCHAR(200) NOT NULL COMMENT '字段名',
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS dn_dimension_field (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='维度字段';
 
 -- 事实表（Fact Table）
-CREATE TABLE IF NOT EXISTS dn_fact_table (
+CREATE TABLE IF NOT EXISTS dl_fact_table (
     id              BIGINT AUTO_INCREMENT PRIMARY KEY,
     fact_code       VARCHAR(100) NOT NULL COMMENT '事实表编码',
     fact_name       VARCHAR(200) NOT NULL COMMENT '事实表名称',
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS dn_fact_table (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='事实表';
 
 -- 事实表字段
-CREATE TABLE IF NOT EXISTS dn_fact_field (
+CREATE TABLE IF NOT EXISTS dl_fact_field (
     id              BIGINT AUTO_INCREMENT PRIMARY KEY,
     fact_id         BIGINT NOT NULL COMMENT '事实表ID',
     field_name      VARCHAR(200) NOT NULL COMMENT '字段名',
@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS dn_fact_field (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='事实表字段';
 
 -- 汇总表（Summary Table）
-CREATE TABLE IF NOT EXISTS dn_summary_table (
+CREATE TABLE IF NOT EXISTS dl_summary_table (
     id              BIGINT AUTO_INCREMENT PRIMARY KEY,
     summary_code    VARCHAR(100) NOT NULL COMMENT '汇总表编码',
     summary_name    VARCHAR(200) NOT NULL COMMENT '汇总表名称',
@@ -95,7 +95,7 @@ CREATE TABLE IF NOT EXISTS dn_summary_table (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='汇总表';
 
 -- 汇总表字段
-CREATE TABLE IF NOT EXISTS dn_summary_field (
+CREATE TABLE IF NOT EXISTS dl_summary_field (
     id              BIGINT AUTO_INCREMENT PRIMARY KEY,
     summary_id      BIGINT NOT NULL COMMENT '汇总表ID',
     field_name      VARCHAR(200) NOT NULL COMMENT '字段名',
@@ -109,7 +109,7 @@ CREATE TABLE IF NOT EXISTS dn_summary_field (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='汇总表字段';
 
 -- 模型发布历史
-CREATE TABLE IF NOT EXISTS dn_model_publish_history (
+CREATE TABLE IF NOT EXISTS dl_model_publish_history (
     id              BIGINT AUTO_INCREMENT PRIMARY KEY,
     model_type      VARCHAR(30) NOT NULL COMMENT '模型类型（dimension/fact/summary）',
     model_id        BIGINT NOT NULL COMMENT '模型ID',

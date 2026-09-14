@@ -1,5 +1,5 @@
 -- 指标定义表
-CREATE TABLE IF NOT EXISTS `dn_metric` (
+CREATE TABLE IF NOT EXISTS `dl_metric` (
   `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
   `metric_name` VARCHAR(200) NOT NULL COMMENT '指标名称',
   `metric_code` VARCHAR(100) NOT NULL COMMENT '指标编码(唯一)',

@@ -1,0 +1,43 @@
+# ============================================================
+# DataLink 部署配置示例
+# 用法：cp datalink.conf.example datalink.conf && vi datalink.conf
+# 注意：此文件包含敏感信息，权限设为 600，切勿提交到仓库
+# ============================================================
+
+# ---------- MySQL ----------
+MYSQL_HOST=127.0.0.1
+MYSQL_PORT=3307
+# MySQL 账号：企业部署建议创建专用账号，不要用 root
+MYSQL_USERNAME=root
+# MySQL 口令：首次部署请自行填写强密码
+MYSQL_PASSWORD=
+
+# ---------- Hive ----------
+HIVE_PORT=10800
+
+# ---------- HDFS ----------
+HDFS_WEB_PORT=9870
+
+# ---------- DataLink ----------
+DATALINK_PORT=8099
+# 登录账号：企业部署必须设置强密码，留空则放行所有请求（仅本地开发）
+DATALINK_USERNAME=admin
+DATALINK_PASSWORD=
+
+# ---------- 安全配置 ----------
+# 允许的跨域来源，多个用逗号分隔；* 表示放行所有（仅开发环境）
+CORS_ALLOWED_ORIGINS=*
+# 生产环境建议关闭接口文档：false
+SPRINGDOC_ENABLED=true
+
+# ---------- DataX ----------
+# local=本地执行  docker=Docker容器执行
+DATAX_MODE=docker
+
+# ---------- 加密密钥（16/24/32 字节，必填）----------
+# 加密密钥：必须自行生成，切勿使用固定值，也不要提交到仓库
+# 生成方法：LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32; echo
+CRYPTO_KEY=
+
+# ---------- Docker 网络 ----------
+NETWORK=datalink-net
