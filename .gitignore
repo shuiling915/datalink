@@ -62,3 +62,5 @@ multimodal-data-lake/frontend/dist/
 multimodal-data-lake/**/__pycache__/
 # BI (DataEase) Docker volumes
 bi-docker/de-*
+lance_lake/
+**/lance_lake/

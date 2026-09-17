@@ -99,8 +99,21 @@ if "lance_bucket" not in S3_CONFIG:
     # 默认：如果没显式给第二个桶，就用 bucket_name 派生一个（避免和原文件混在一起）
     S3_CONFIG["lance_bucket"] = (f"{base_bucket}-lance" if base_bucket else "demo-lance")
 
-# 默认使用方式B：把 LanceDB 表存在 SeaweedFS(S3) 上
-LANCE_DB_URI = f"s3://{S3_CONFIG['lance_bucket']}/{S3_CONFIG.get('lance_prefix','lance_lake')}"
+# 判断是否使用本地存储：S3_ENDPOINT_URL 为空或显式设置 LANCE_STORAGE=local
+_use_local_lance = (
+    not S3_CONFIG.get("endpoint_url")
+    or os.getenv("LANCE_STORAGE", "").strip().lower() == "local"
+)
+
+if _use_local_lance:
+    # 方式A：本地目录存储（开发/单机模式，无需 S3）
+    LANCE_DB_URI = os.path.join(BASE_DIR, "lance_lake")
+    os.makedirs(LANCE_DB_URI, exist_ok=True)
+    # 清空无效的 S3 配置，避免 lancedb 尝试连接对象存储
+    S3_CONFIG["endpoint_url"] = ""
+else:
+    # 方式B：对象存储/S3（推荐：放 SeaweedFS 的 S3 网关上）
+    LANCE_DB_URI = f"s3://{S3_CONFIG['lance_bucket']}/{S3_CONFIG.get('lance_prefix','lance_lake')}"
 
 # --- LLM / 知识图谱 ---
 # 建议在环境变量中配置 DEEPSEEK_API_KEY；如需本地测试，可临时在此处填入测试密钥

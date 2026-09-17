@@ -27,35 +27,87 @@ def get_text_splitter(chunk_size=500, chunk_overlap=50):
 
 def _load_models():
     import os
-
-    from sentence_transformers import SentenceTransformer
-    import whisper
+    import hashlib
+    import numpy as np
 
     os.environ.setdefault("HF_ENDPOINT", "https://hf-mirror.com")
 
-    whisper_cache = os.path.join(
-        os.getenv("XDG_CACHE_HOME", os.path.join(os.path.expanduser("~"), ".cache")),
-        "whisper",
-    )
-    whisper_local = os.path.join(whisper_cache, "base.pt")
-    if os.path.isfile(whisper_local):
-        whisper_model = whisper.load_model(whisper_local)
-    else:
-        whisper_model = whisper.load_model("base")
+    models = {}
+    has_st = False
+    has_whisper = False
 
-    def _load_st(name):
+    try:
+        from sentence_transformers import SentenceTransformer
+        has_st = True
+    except ImportError:
+        logger.warning("sentence_transformers 未安装，使用哈希向量回退（语义检索质量受限）")
+
+    try:
+        import whisper
+        has_whisper = True
+    except ImportError:
+        logger.warning("whisper 未安装，音频转写功能不可用")
+
+    # 文本向量化：优先 sentence_transformers，回退到哈希向量
+    if has_st:
+        def _load_st(name):
+            try:
+                return SentenceTransformer(name, local_files_only=True)
+            except Exception:
+                logger.info("local cache miss, loading model online: %s", name)
+                return SentenceTransformer(name)
         try:
-            return SentenceTransformer(name, local_files_only=True)
-        except Exception:
-            logger.info("local cache miss, loading model online: %s", name)
-            return SentenceTransformer(name)
+            models["text"] = _load_st("BAAI/bge-small-zh-v1.5")
+            models["clip_text"] = _load_st("sentence-transformers/clip-ViT-B-32-multilingual-v1")
+            models["clip_vision"] = _load_st("clip-ViT-B-32")
+        except Exception as e:
+            logger.warning("加载 sentence_transformers 模型失败: %s，使用哈希向量回退", e)
+            has_st = False
 
-    return {
-        "text": _load_st("BAAI/bge-small-zh-v1.5"),
-        "clip_text": _load_st("sentence-transformers/clip-ViT-B-32-multilingual-v1"),
-        "clip_vision": _load_st("clip-ViT-B-32"),
-        "whisper": whisper_model,
-    }
+    if not has_st:
+        def _hash_encode(texts, dim=512):
+            if isinstance(texts, str):
+                texts = [texts]
+            vecs = []
+            for t in texts:
+                h = hashlib.md5(t.encode("utf-8")).digest()
+                vec = np.frombuffer(h * (dim // 16 + 1), dtype=np.uint8)[:dim].astype(np.float32)
+                vec = (vec - 128) / 128.0
+                norm = np.linalg.norm(vec)
+                if norm > 0:
+                    vec = vec / norm
+                vecs.append(vec)
+            return np.array(vecs)
+
+        class _FallbackEncoder:
+            def encode(self, texts, **kwargs):
+                return _hash_encode(texts)
+            def encode_queries(self, texts, **kwargs):
+                return _hash_encode(texts)
+
+        models["text"] = _FallbackEncoder()
+        models["clip_text"] = _FallbackEncoder()
+        models["clip_vision"] = _FallbackEncoder()
+
+    # Whisper 音频模型
+    if has_whisper:
+        try:
+            whisper_cache = os.path.join(
+                os.getenv("XDG_CACHE_HOME", os.path.join(os.path.expanduser("~"), ".cache")),
+                "whisper",
+            )
+            whisper_local = os.path.join(whisper_cache, "base.pt")
+            if os.path.isfile(whisper_local):
+                models["whisper"] = whisper.load_model(whisper_local)
+            else:
+                models["whisper"] = whisper.load_model("base")
+        except Exception as e:
+            logger.warning("加载 whisper 模型失败: %s", e)
+            models["whisper"] = None
+    else:
+        models["whisper"] = None
+
+    return models
 
 
 @lru_cache(maxsize=1)
@@ -65,6 +117,9 @@ def load_models_cached():
 
 
 def _storage_options():
+    # 本地存储模式（LANCE_DB_URI 为本地路径）：不传入 S3 配置
+    if not LANCE_DB_URI.startswith("s3://"):
+        return {}
     region = str(S3_CONFIG.get("region") or DEFAULT_AWS_REGION or "us-east-1")
     return {
         "endpoint_url": S3_CONFIG["endpoint_url"],

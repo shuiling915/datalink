@@ -32,23 +32,33 @@ def _parse_env_line(line: str) -> tuple[str, str] | None:
 
 
 def load_local_env_files(base_dir: str | Path | None = None) -> list[Path]:
-    root = Path(base_dir) if base_dir is not None else Path(__file__).resolve().parent
+    if base_dir is not None:
+        roots = [Path(base_dir).resolve()]
+    else:
+        # 从当前工作目录开始，向上查找包含 .env 的目录（最多 5 层）
+        start = Path.cwd().resolve()
+        roots = [start] + list(start.parents)[:5]
+
     loaded_files: list[Path] = []
 
-    for env_name in _DEFAULT_ENV_FILES:
-        env_path = (root / env_name).resolve()
-        if env_path in _LOADED_ENV_FILES or not env_path.is_file():
-            continue
+    for root in roots:
+        for env_name in _DEFAULT_ENV_FILES:
+            env_path = (root / env_name).resolve()
+            if env_path in _LOADED_ENV_FILES or not env_path.is_file():
+                continue
 
-        with env_path.open("r", encoding="utf-8") as handle:
-            for raw_line in handle:
-                parsed = _parse_env_line(raw_line)
-                if parsed is None:
-                    continue
-                key, value = parsed
-                os.environ.setdefault(key, value)
+            with env_path.open("r", encoding="utf-8") as handle:
+                for raw_line in handle:
+                    parsed = _parse_env_line(raw_line)
+                    if parsed is None:
+                        continue
+                    key, value = parsed
+                    os.environ.setdefault(key, value)
 
-        _LOADED_ENV_FILES.add(env_path)
-        loaded_files.append(env_path)
+            _LOADED_ENV_FILES.add(env_path)
+            loaded_files.append(env_path)
+
+        if loaded_files:
+            break
 
     return loaded_files
